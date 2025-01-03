@@ -7,7 +7,6 @@ class Text extends FormElement {
   Text({
     required super.title,
     super.subTitle,
-    required super.index,
     super.required,
     String? text
   }) : _text = text ?? "";
@@ -17,7 +16,6 @@ class Text extends FormElement {
     return Text(
       title: json['title'] as String,
       subTitle: json['subtitle'] as String,
-      index: json['index'] as int,
       required: json['required'] as bool,
       text: json['text'] as String,
     );
@@ -28,7 +26,6 @@ class Text extends FormElement {
       {
         'title': super.title,
         'subtitle': super.subTitle,
-        'index': super.index,
         'required': super.required,
         'type': "text",
         'text': _text

@@ -19,10 +19,10 @@ class FormPage extends StatefulWidget {
     required FirebaseFirestore db
   }) : _form = form,
         _pageNumber = pageNumber,
-        _page = page ?? page_model.Page.fromJson((form?['pages'] as List).where((x) => x['page_number'] == pageNumber).first),
+        _page = page ?? page_model.Page.fromJson(form?['pages'][pageNumber.toString()]),
         _db = db;
 
-  final page_model.Page? _page;
+  final page_model.Page _page;
 
   final int _pageNumber;
 
@@ -38,16 +38,16 @@ class _FormPageState extends State<FormPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  final Map<int, String?> radioSelections = {};
+  final Map<int, String?> _radioSelections = {};
 
-  final Map<int, Map<String, bool>?> checkboxSelections = {};
+  final Map<int, Map<String, bool>?> _checkboxSelections = {};
 
-  final Map<int, TextEditingController> controllers = {};
+  final Map<int, TextEditingController> _controllers = {};
 
   @override
   void dispose() {
 
-    for(TextEditingController controller in controllers.values){
+    for(TextEditingController controller in _controllers.values){
       controller.dispose();
     }
     super.dispose();
@@ -56,50 +56,106 @@ class _FormPageState extends State<FormPage> {
   @override
   Widget build(BuildContext context) {
 
+    List<Widget> seList = [];
+    if(widget._page.description.isNotEmpty){
+      seList += [
+        Text(widget._page.description,
+          style: TextStyle(
+            fontSize: 20,
+          ),
+        ),
+        Divider(
+          color: Colors.black,
+          thickness: 1,
+        ),
+        SizedBox(height: 30)
+      ];
+    }
+    seList += widget._page!.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget._page!.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            tooltip: 'Next page',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FormPage(
+                      form: widget._form,
+                      pageNumber: widget._pageNumber + 1,
+                      db: widget._db
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
-        child: Column(
-          children: widget._page!.elements!.map((x) => makeWidget(x)).toList()
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: seList
+          ),
         ),
       ),
     );
   }
 
-  Widget makeWidget(FormElement element){
+  Widget makeWidget(int index, FormElement element){
+
+    List<Widget> seList = [
+      Text(element.title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 22,
+        ),
+      ),
+      Text(element.subTitle,
+        style: TextStyle(
+          fontSize: 18,
+        ),
+      ),
+    ];
 
     if(element.runtimeType == text_model.Text){
 
-      text_model.Text textElement = element as text_model.Text;
-      controllers[textElement.index] = TextEditingController();
+      if(_controllers[index] == null){
+        _controllers[index] = TextEditingController();
+      }
 
-      return TextFormField(
+      seList.add(TextFormField(
         decoration: InputDecoration(
-          hintText: textElement.subTitle,
-          labelText: textElement.title,
+          hintText: "Your answer",
         ),
-        controller: controllers[textElement.index],
-      );
+        controller: _controllers[index],
+      ));
+
     }else if(element.runtimeType == Selection){
 
       Selection selElement = element as Selection;
-      List<Widget> seList = [];
-      if(selElement.numOptions == 1){
 
-        radioSelections[selElement.index] = selElement.otherText!.isNotEmpty ? "other" : selElement.selections.first;
+      if(selElement.numSelections == 1){
 
-        seList = selElement.options.map((x) {
-          RadioListTile<String>(
+        if(_radioSelections[index] == null){
+          _radioSelections[index] = selElement.selections.isNotEmpty ? selElement.selections.first : "";
+        }
+
+        seList += selElement.options.map((x) {
+          return RadioListTile<String>(
             title: Text(x),
             value: x,
-            groupValue: radioSelections[selElement.index],
+            groupValue: _radioSelections[index],
+            contentPadding: EdgeInsets.only(bottom: 1.0),
             onChanged: (String? value) {
               setState(() {
-                radioSelections[selElement.index] = value;
+                _radioSelections[index] = value;
               });
             },
           );
@@ -107,7 +163,9 @@ class _FormPageState extends State<FormPage> {
 
         if(selElement.other){
 
-          controllers[selElement.index] = TextEditingController();
+          if(_controllers[index] == null){
+            _controllers[index] = TextEditingController();
+          }
 
           seList.add(
               RadioListTile<String>(
@@ -115,13 +173,14 @@ class _FormPageState extends State<FormPage> {
                   decoration: InputDecoration(
                     labelText: selElement.otherText,
                   ),
-                  controller: controllers[selElement.index],
+                  controller: _controllers[index],
                 ),
                 value: "other",
-                groupValue: radioSelections[selElement.index],
+                groupValue: _radioSelections[index],
+                contentPadding: EdgeInsets.only(bottom: 1.0),
                 onChanged: (String? value) {
                   setState(() {
-                    radioSelections[selElement.index] = "other";
+                    _radioSelections[index] = "other";
                   });
                 },
               )
@@ -129,22 +188,59 @@ class _FormPageState extends State<FormPage> {
         }
       }else{
 
-        // seList = selElement.options.map((x) {
-        //   CheckboxListTile(
-        //     title: new Text(key),
-        //     value: values[key],
-        //     onChanged: (bool value) {
-        //       setState(() {
-        //         values[key] = value;
-        //       });
-        //     },
-        //   );
-        // }).toList() as List<Widget>;
-      }
+        if(_checkboxSelections[index] == null){
+          _checkboxSelections[index] = { for (var v in selElement.options) v: selElement.selections.contains(v) };
+        }
 
-      return Column(
-        children: seList,
-      );
+        seList += selElement.options.map((x) {
+          return CheckboxListTile(
+            title: Text(x),
+            value: _checkboxSelections[index]?[x],
+            contentPadding: EdgeInsets.only(bottom: 1.0),
+            onChanged: (bool? value) {
+              setState(() {
+                _checkboxSelections[index]?[x] = value!;
+              });
+            },
+          );
+        }).toList() as List<Widget>;
+
+        if(selElement.other){
+
+          if(_controllers[index] == null){
+            _controllers[index] = TextEditingController();
+          }
+          if(_checkboxSelections[index]?["other"] == null){
+            _checkboxSelections[index]?["other"] = selElement.otherText!.isNotEmpty;
+          }
+
+          seList.add(
+            CheckboxListTile(
+              title: TextFormField(
+                decoration: InputDecoration(
+                  labelText: selElement.otherText,
+                ),
+                controller: _controllers[index],
+              ),
+              value: _checkboxSelections[index]?["other"],
+              contentPadding: EdgeInsets.only(bottom: 1.0),
+              onChanged: (bool? value) {
+                setState(() {
+                  _checkboxSelections[index]?["other"] = value!;
+                });
+              },
+            )
+          );
+        }
+      }
     }
+
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: seList
+        ),
+    );
   }
 }

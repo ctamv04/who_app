@@ -1,13 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
-import '../models/form.dart' as form_model;
-import '../models/form_element.dart';
-import '../models/page.dart' as page_model;
-import '../models/selection.dart';
-import '../models/text.dart' as text_model;
 import 'form_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,21 +33,23 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) {
 
               final form = snapshot.data?.docs[index].data();
-              return ListTile(
-                title: Text(form?['title']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FormPage(
-                        form: form,
-                        pageNumber: 1,
-                        db: widget._db
+              if(form != null){
+                return ListTile(
+                  title: Text(form['title']),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FormPage(
+                            form: form,
+                            pageNumber: 1,
+                            db: widget._db
+                        ),
                       ),
-                    ),
-                  );
-                },
-              );
+                    );
+                  },
+                );
+              }
             }
           );
         }
