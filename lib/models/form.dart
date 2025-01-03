@@ -6,20 +6,20 @@ class Form {
 
   String _title;
   String _description;
-  List<Page> _pages;
+  Map<int, Page> _pages;
 
   Form({
     required String title,
     String? description,
-    List<Page>? pages
-  }) : _title = title, _description = description ?? "", _pages = pages ?? <Page>[];
+    Map<int, Page>? pages
+  }) : _title = title, _description = description ?? "", _pages = pages ?? {};
 
   factory Form.fromJson(Map<String, dynamic> json) {
 
     return Form(
         title: json['title'] as String,
         description: json['description'] as String,
-        pages: (json['pages'] as List).map((x) => Page.fromJson(x)).toList()
+        pages: (json['pages'] as Map<String, dynamic>).map((k,v) => MapEntry(int.parse(k), Page.fromJson(v)))
     );
   }
 
@@ -27,6 +27,6 @@ class Form {
       {
         'title': _title,
         'description': _description,
-        'pages': _pages.map((x) => x.toJson()).toList()
+        'pages': _pages.map((k,v) => MapEntry(k.toString(), v.toJson()))
       };
 }

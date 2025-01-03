@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'form_element.dart';
 
 class Selection extends FormElement {
 
   List<String> _options;
-  int _numOptions;
+  int _numSelections;
   bool _other;
   Set<String> _selections;
   String? _otherText;
@@ -13,15 +11,14 @@ class Selection extends FormElement {
   Selection({
     required super.title,
     super.subTitle,
-    required super.index,
     super.required,
     List<String>? options,
-    int? numOptions,
+    int? numSelections,
     bool? other,
     Set<String>? selections,
     String? otherText
   }) : _options = options ?? <String>[],
-        _numOptions = (numOptions != null && numOptions > 0) ? numOptions : 1,
+        _numSelections = (numSelections != null && numSelections > 0) ? numSelections : 1,
         _other = other ?? false,
         _selections = selections ?? <String>{},
         _otherText = otherText ?? "";
@@ -31,10 +28,9 @@ class Selection extends FormElement {
     return Selection(
       title: json['title'] as String,
       subTitle: json['subtitle'] as String,
-      index: json['index'] as int,
       required: json['required'] as bool,
       options: (json['options'] as List<dynamic>).map((e) => e as String).toList(),
-      numOptions: json['num_options'] as int,
+      numSelections: json['num_selections'] as int?,
       other: json['other'] as bool,
       selections: (json['selections'] as List<dynamic>).map((e) => e as String).toSet(),
       otherText: json['other_text'] as String,
@@ -46,18 +42,17 @@ class Selection extends FormElement {
       {
         'title': super.title,
         'subtitle': super.subTitle,
-        'index': super.index,
         'required': super.required,
         'type': "selection",
         'options': _options,
-        'num_options': _numOptions,
+        'num_selections': _numSelections,
         'other': _other,
         'selections': _selections.toList(),
         'other_text': _otherText
       };
 
   List<String> get options => _options;
-  int get numOptions => _numOptions;
+  int get numSelections => _numSelections;
   bool get other => _other;
   Set<String> get selections => _selections;
   String? get otherText => _otherText;
