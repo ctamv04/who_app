@@ -1,27 +1,25 @@
 import 'form_element.dart';
+import 'dart:convert';
 
 class Selection extends FormElement {
 
-  List<String> _options;
   int _numSelections;
   bool _other;
-  Set<String> _selections;
+  Map<String, bool> _selections;
   String? _otherText;
 
   Selection({
     required super.title,
     super.subTitle,
     super.required,
-    List<String>? options,
+    required Map<String, bool> selections,
     int? numSelections,
     bool? other,
-    Set<String>? selections,
     String? otherText
-  }) : _options = options ?? <String>[],
-        _numSelections = (numSelections != null && numSelections > 0) ? numSelections : 1,
+  }) : _numSelections = (numSelections != null && numSelections > 0) ? numSelections : 1,
         _other = other ?? false,
-        _selections = selections ?? <String>{},
-        _otherText = otherText ?? "";
+        _selections = ((other ?? false) && (selections["other"] == null)) ? (selections..["other"] = false) : selections,
+        _otherText = ((other ?? false) && otherText != null || (selections["other"] ?? false)) ? otherText : "";
 
   factory Selection.fromJson(Map<String, dynamic> json) {
 
@@ -29,10 +27,9 @@ class Selection extends FormElement {
       title: json['title'] as String,
       subTitle: json['subtitle'] as String,
       required: json['required'] as bool,
-      options: (json['options'] as List<dynamic>).map((e) => e as String).toList(),
       numSelections: json['num_selections'] as int?,
       other: json['other'] as bool,
-      selections: (json['selections'] as List<dynamic>).map((e) => e as String).toSet(),
+      selections: (json['selections'] as Map<String, dynamic>).map((k,v) => MapEntry(k, v as bool)),
       otherText: json['other_text'] as String,
     );
   }
@@ -44,16 +41,17 @@ class Selection extends FormElement {
         'subtitle': super.subTitle,
         'required': super.required,
         'type': "selection",
-        'options': _options,
         'num_selections': _numSelections,
         'other': _other,
-        'selections': _selections.toList(),
+        'selections': _selections,
         'other_text': _otherText
       };
 
-  List<String> get options => _options;
   int get numSelections => _numSelections;
   bool get other => _other;
-  Set<String> get selections => _selections;
+  Map<String, bool> get selections => _selections;
   String? get otherText => _otherText;
+
+  set otherText(String? otherText) => _otherText = (_other && otherText != null || (_selections["other"] ?? false)) ? otherText : "";
+  set selections(Map<String, bool> selections) => _selections = (_other && (selections["other"] == null)) ? (selections..["other"] = false) : selections;
 }

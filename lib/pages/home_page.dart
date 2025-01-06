@@ -43,6 +43,7 @@ class _HomePageState extends State<HomePage> {
                         builder: (context) => FormPage(
                             form: form,
                             pageNumber: 1,
+                            computedPages: {},
                             db: widget._db
                         ),
                       ),

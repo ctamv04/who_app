@@ -15,7 +15,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  var form = form_model.Form(title: "default2", pages: {1: page_model.Page(title: "page1", pageNumber: 1, description: "descriptionPage", elements: {1: text_model.Text(title: "text1", subTitle: "subtitle1", required: false, text: ""), 2: Selection(title: "text1", subTitle: "subtitle1", required: true, options: ["option1"], other: true)}), 2: page_model.Page(title: "page2", pageNumber: 2, description: "descriptionPage", elements: {1: Selection(title: "text1", subTitle: "subtitle1", required: true, options: ["option1", "option2", "option3"], numSelections: 2)})});
+  var form = form_model.Form(title: "default2", pages: {1: page_model.Page(title: "page1", pageNumber: 1, description: "descriptionPage", elements: {1: text_model.Text(title: "text1", subTitle: "subtitle1", required: false, text: ""), 2: Selection(title: "text1", subTitle: "subtitle1", selections: {"option1": false, "option2": false}, required: true, other: true)}), 2: page_model.Page(title: "page2", pageNumber: 2, description: "descriptionPage", elements: {1: Selection(title: "text1", subTitle: "subtitle1", required: true, selections: {"option1": false, "option2": true, "option3": true}, numSelections: 2)})});
   final json = form.toJson();
   final db = FirebaseFirestore.instance;
   db.collection("forms").add(json);
@@ -23,5 +23,11 @@ Future<void> main() async {
   var snap = await db.collection("forms").get();
   var forms = snap.docs.map((x) => form_model.Form.fromJson(x.data())).toList();
 
-  runApp(MaterialApp(home: HomePage(db: db)));
+  runApp(MaterialApp(
+      title: 'WHO Form Manager',
+      routes: {
+        '/': (context) => HomePage(db: db),
+      },
+      initialRoute: '/',
+  ));
 }
