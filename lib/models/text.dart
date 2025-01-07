@@ -32,4 +32,6 @@ class Text extends FormElement {
       };
 
   String get text => _text;
+
+  set text(String text) => _text = text;
 }
