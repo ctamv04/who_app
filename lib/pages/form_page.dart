@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:who_app/models/field_page.dart';
 import 'package:who_app/pages/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
@@ -43,7 +42,7 @@ class _FormPageState extends State<FormPage> {
 
   final Map<int, TextEditingController> _controllers = {};
 
-  late FieldPage _page;
+  late page_model.Page _page;
 
   @override
   void dispose() {
@@ -57,7 +56,7 @@ class _FormPageState extends State<FormPage> {
   @override
   Widget build(BuildContext context) {
 
-    _page = widget._computedPages[widget._pageNumber]! as FieldPage;
+    _page = widget._computedPages[widget._pageNumber]!;
 
     List<Widget> seList = [];
     if(_page.description.isNotEmpty){
