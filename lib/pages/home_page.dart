@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// TODO Make some kind of Widget factory for pages
 class _HomePageState extends State<HomePage> {
 
   @override

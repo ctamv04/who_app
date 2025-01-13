@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
-import '../models/form.dart' as form_model;
+import 'package:who_app/models/field_page.dart';
+import 'package:who_app/pages/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
+import '../models/location.dart' as loc_model;
 
 class FormPage extends StatefulWidget {
 
@@ -44,7 +43,7 @@ class _FormPageState extends State<FormPage> {
 
   final Map<int, TextEditingController> _controllers = {};
 
-  late page_model.Page _page;
+  late FieldPage _page;
 
   @override
   void dispose() {
@@ -58,7 +57,7 @@ class _FormPageState extends State<FormPage> {
   @override
   Widget build(BuildContext context) {
 
-    _page = widget._computedPages[widget._pageNumber]!;
+    _page = widget._computedPages[widget._pageNumber]! as FieldPage;
 
     List<Widget> seList = [];
     if(_page.description.isNotEmpty){
@@ -82,7 +81,7 @@ class _FormPageState extends State<FormPage> {
       actions.add(
           IconButton(
             icon: const Icon(Icons.arrow_forward),
-            tooltip: 'Submit form',
+            tooltip: 'Next page',
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 writeChanges();
@@ -122,14 +121,17 @@ class _FormPageState extends State<FormPage> {
         title: Text(_page.title),
         actions: actions
       ),
+      resizeToAvoidBottomInset: true,
       body: Form(
         key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: seList
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+                children: seList
+            ),
           ),
-        ),
+        )
       ),
     );
   }
@@ -324,14 +326,17 @@ class _FormPageState extends State<FormPage> {
             )
         );
       }
+    }else if(element.runtimeType == loc_model.Location){
+
+      loc_model.Location locElement = element as loc_model.Location;
+
+      elements.add(MapWidget(address: locElement.address, coordinates: locElement.coordinates));
     }
 
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: elements
-        ),
+    return ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.only(bottom: 20),
+              children: elements
     );
   }
 

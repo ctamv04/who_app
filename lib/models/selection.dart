@@ -1,5 +1,4 @@
 import 'form_element.dart';
-import 'dart:convert';
 
 class Selection extends FormElement {
 
