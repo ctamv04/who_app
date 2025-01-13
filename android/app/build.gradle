@@ -63,7 +63,7 @@ secrets {
     // 1. If the secrets.properties file does not exist, create it in the same folder as the local.properties file.
     // 2. Add this line, where YOUR_API_KEY is your API key:
     //        MAPS_API_KEY=YOUR_API_KEY
-    propertiesFileName = "secrets.properties"
+    propertiesFileName = "secret.properties"
 
     // Configure which keys should be ignored by the plugin by providing regular expressions.
     // "sdk.dir" is ignored by default.
