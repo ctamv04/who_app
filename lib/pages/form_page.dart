@@ -42,6 +42,8 @@ class _FormPageState extends State<FormPage> {
 
   final Map<int, TextEditingController> _controllers = {};
 
+  final Map<int, MapWidget> _mapWidgets = {};
+
   late page_model.Page _page;
 
   @override
@@ -329,7 +331,10 @@ class _FormPageState extends State<FormPage> {
 
       loc_model.Location locElement = element as loc_model.Location;
 
-      elements.add(MapWidget(address: locElement.address, coordinates: locElement.coordinates));
+      if(!_mapWidgets.containsKey(index)){
+        _mapWidgets[index] = MapWidget(address: locElement.address, coordinates: locElement.coordinates, required: locElement.required);
+      }
+      elements.add(_mapWidgets[index]!);
     }
 
     return ListView(
@@ -347,12 +352,12 @@ class _FormPageState extends State<FormPage> {
       if(element.runtimeType == text_model.Text){
 
         (element as text_model.Text).text = _controllers[index]!.text;
-      }else{
+      }else if(element.runtimeType == Selection){
 
         Selection selElement = element as Selection;
 
         if(selElement.numSelections == 1){
-          selElement.selections = selElement.selections.map((k,v) => MapEntry(k, v == _radioSelections[index]));
+          selElement.selections = selElement.selections.map((k,v) => MapEntry(k, k == _radioSelections[index]));
 
           if(selElement.other && _radioSelections[index] == "other"){
             selElement.otherText = _controllers[index]!.text;
@@ -368,6 +373,12 @@ class _FormPageState extends State<FormPage> {
             selElement.otherText = "";
           }
         }
+      }else{
+
+        loc_model.Location locElement = element as loc_model.Location;
+
+        locElement.address = _mapWidgets[index]!.address;
+        locElement.coordinates = _mapWidgets[index]!.coordinates;
       }
     }
   }

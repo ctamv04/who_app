@@ -45,4 +45,7 @@ class Location extends FormElement {
 
   String get address => _address;
   LatLng get coordinates => _coordinates;
+
+  set address(String? address) => _address = address ?? "";
+  set coordinates(LatLng? coordinates) => _coordinates = coordinates ?? LatLng(0, 0);
 }
