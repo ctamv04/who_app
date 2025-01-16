@@ -151,7 +151,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                                     controller: textEditingController,
                                     focusNode: focusNode,
                                     decoration: InputDecoration(
-                                      hintText: 'Enter address',
+                                      hintText: 'Enter address'
                                     )
                                 );
                               },
