@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -81,6 +83,9 @@ class TextFieldDetectionState extends State<MapWidget> {
                           ),
                           myLocationEnabled: true,
                           myLocationButtonEnabled: true,
+                            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                              Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+                            },
                           onCameraMove: (CameraPosition position) {
                             widget._coordinates = position.target;
                           },
@@ -108,7 +113,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                                 color: Colors.white,
                                 child: Text(
                                   "Lat: ${widget._coordinates.latitude.toStringAsFixed(2)}, Long: ${widget._coordinates.longitude.toStringAsFixed(2)}",
-                                  style: TextStyle(fontSize: 18),
+                                  style: TextStyle(fontSize: 12),
                                 )
                             )
                         )
@@ -129,7 +134,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                                   return const Iterable<Location>.empty();
                                 }
 
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyA9T-d0U9H9EmqMPP1Tm8VSaqARGt3C-8M';
+                                String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=';
                                 String request = '$baseURL&input=$text&sessiontoken=$_sessionToken';
                                 var response = await http.get(Uri.parse(request));
 
@@ -158,7 +163,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                               onSelected: (Location selection) async {
 
                                 String placeID  = selection._id;
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyA9T-d0U9H9EmqMPP1Tm8VSaqARGt3C-8M&fields=formatted_address,geometry';
+                                String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=&fields=formatted_address,geometry';
                                 String request = '$baseURL&place_id=$placeID&sessiontoken=$_sessionToken';
                                 var response = await http.get(Uri.parse(request));
                                 Map<String, dynamic> result = json.decode(response.body)['result'];

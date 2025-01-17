@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FormPage(
+                            key: UniqueKey(),
                             form: form,
                             pageNumber: 1,
                             computedPages: {},

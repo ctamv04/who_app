@@ -65,7 +65,7 @@ class _FormPageState extends State<FormPage> {
       seList += [
         Text(_page.description,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 14,
           ),
         ),
         Divider(
@@ -143,12 +143,12 @@ class _FormPageState extends State<FormPage> {
       Text(element.title,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 22,
+          fontSize: 16,
         ),
       ),
       Text(element.subTitle,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 12,
         ),
       ),
     ];
@@ -337,10 +337,12 @@ class _FormPageState extends State<FormPage> {
       elements.add(_mapWidgets[index]!);
     }
 
-    return ListView(
-              shrinkWrap: true,
-              padding: EdgeInsets.only(bottom: 20),
-              children: elements
+    return Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: elements
+        )
     );
   }
 
