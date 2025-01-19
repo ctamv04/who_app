@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:who_app/pages/map_widget.dart';
+import 'package:who_app/screens/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
 import '../models/location.dart' as loc_model;
 
-class FormPage extends StatefulWidget {
+class FormScreen extends StatefulWidget {
 
   final Map<String, dynamic> _form;
 
@@ -17,7 +17,7 @@ class FormPage extends StatefulWidget {
 
   final FirebaseFirestore _db;
 
-  FormPage({
+  FormScreen({
     super.key,
     required Map<String, dynamic> form,
     required int pageNumber,
@@ -29,10 +29,10 @@ class FormPage extends StatefulWidget {
         _db = db;
 
   @override
-  State<FormPage> createState() => _FormPageState();
+  State<FormScreen> createState() => _FormScreenState();
 }
 
-class _FormPageState extends State<FormPage> {
+class _FormScreenState extends State<FormScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
@@ -89,7 +89,7 @@ class _FormPageState extends State<FormPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FormPage(
+                    builder: (context) => FormScreen(
                         form: widget._form,
                         pageNumber: widget._pageNumber + 1,
                         computedPages: widget._computedPages,
@@ -108,7 +108,7 @@ class _FormPageState extends State<FormPage> {
                 if (_formKey.currentState!.validate()) {
                   writeChanges();
                   widget._db.collection("filled_forms").add(widget._form..['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson())));
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
+                  Navigator.popUntil(context, ModalRoute.withName('/forms'));
                 }
             },
             child: const Text('Submit'),

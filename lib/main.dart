@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:who_app/models/location.dart';
-import 'package:who_app/pages/home_page.dart';
+import 'package:who_app/screens/form_list_screen.dart';
+import 'package:who_app/screens/home_screen.dart';
+import 'package:who_app/screens/signin_screen.dart';
 import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
 import 'models/selection.dart';
 import 'models/text.dart' as text_model;
 import '../models/page.dart' as page_model;
+import 'package:responsive_framework/responsive_framework.dart';
 
 Future<void> main() async {
 
@@ -24,11 +28,21 @@ Future<void> main() async {
   var snap = await db.collection("forms").get();
   var forms = snap.docs.map((x) => form_model.Form.fromJson(x.data())).toList();
 
+  final auth = FirebaseAuth.instance;
+
   runApp(MaterialApp(
-      title: 'WHO Form Manager',
-      routes: {
-        '/': (context) => HomePage(db: db),
-      },
-      initialRoute: '/',
+    builder: (context, child) => ResponsiveBreakpoints.builder(
+      child: child!,
+      breakpoints: [
+        const Breakpoint(start: 0, end: 800, name: MOBILE),
+        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+      ],
+    ),
+    title: 'WHO Form Manager',
+    home: HomeScreen(db: db, auth: auth),
+    routes: {
+      '/forms': (context) => FormListScreen(db: db),
+      '/login': (context) => LoginScreen(db: db, auth: auth)
+    },
   ));
 }

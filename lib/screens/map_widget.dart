@@ -66,7 +66,7 @@ class TextFieldDetectionState extends State<MapWidget> {
         builder: (context, snapshot) {
 
           if (!snapshot.hasData) {
-            return Text('Loading');
+            return CircularProgressIndicator();
           }
 
           return FormField<bool>(
@@ -134,7 +134,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                                   return const Iterable<Location>.empty();
                                 }
 
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=';
+                                String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0';
                                 String request = '$baseURL&input=$text&sessiontoken=$_sessionToken';
                                 var response = await http.get(Uri.parse(request));
 
@@ -163,7 +163,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                               onSelected: (Location selection) async {
 
                                 String placeID  = selection._id;
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=&fields=formatted_address,geometry';
+                                String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0&fields=formatted_address,geometry';
                                 String request = '$baseURL&place_id=$placeID&sessiontoken=$_sessionToken';
                                 var response = await http.get(Uri.parse(request));
                                 Map<String, dynamic> result = json.decode(response.body)['result'];

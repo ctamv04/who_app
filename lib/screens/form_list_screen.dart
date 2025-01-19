@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'form_page.dart';
+import 'form_screen.dart';
 
-class HomePage extends StatefulWidget {
+class FormListScreen extends StatefulWidget {
 
-  const HomePage({
+  const FormListScreen({
     super.key,
     required FirebaseFirestore db
   }) : _db = db;
@@ -12,11 +12,11 @@ class HomePage extends StatefulWidget {
   final FirebaseFirestore _db;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<FormListScreen> createState() => _FormListScreenState();
 }
 
 // TODO Make some kind of Widget factory for pages
-class _HomePageState extends State<HomePage> {
+class _FormListScreenState extends State<FormListScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FormPage(
+                        builder: (context) => FormScreen(
                             key: UniqueKey(),
                             form: form,
                             pageNumber: 1,
