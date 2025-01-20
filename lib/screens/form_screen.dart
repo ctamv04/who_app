@@ -1,11 +1,17 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:who_app/screens/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
 import '../models/location.dart' as loc_model;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart';
 
 class FormScreen extends StatefulWidget {
 
@@ -17,16 +23,20 @@ class FormScreen extends StatefulWidget {
 
   final FirebaseFirestore _db;
 
+  final Map<int, Uint8List> _screenshots;
+
   FormScreen({
     super.key,
     required Map<String, dynamic> form,
     required int pageNumber,
     required Map<int, page_model.Page> computedPages,
-    required FirebaseFirestore db
+    required FirebaseFirestore db,
+    Map<int, Uint8List>? screenshots
   }) : _form = form,
         _pageNumber = pageNumber,
         _computedPages = computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()]),
-        _db = db;
+        _db = db,
+        _screenshots = screenshots ?? {};
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -45,6 +55,8 @@ class _FormScreenState extends State<FormScreen> {
   final Map<int, MapWidget> _mapWidgets = {};
 
   late page_model.Page _page;
+
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   void dispose() {
@@ -83,9 +95,12 @@ class _FormScreenState extends State<FormScreen> {
           IconButton(
             icon: const Icon(Icons.arrow_forward),
             tooltip: 'Next page',
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
+
                 writeChanges();
+                widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -104,9 +119,13 @@ class _FormScreenState extends State<FormScreen> {
     }else{
       actions.add(
           TextButton(
-            onPressed: () {
+            onPressed: () async {
                 if (_formKey.currentState!.validate()) {
+
                   writeChanges();
+                  widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
+                  parsePdfAndMail();
+
                   widget._db.collection("filled_forms").add(widget._form..['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson())));
                   Navigator.popUntil(context, ModalRoute.withName('/forms'));
                 }
@@ -124,15 +143,18 @@ class _FormScreenState extends State<FormScreen> {
       ),
       resizeToAvoidBottomInset: true,
       body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-                children: seList
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Screenshot(
+                controller: _screenshotController,
+                child: Column(
+                    children: seList
+                ),
+              ),
             ),
-          ),
-        )
+          )
       ),
     );
   }
@@ -383,5 +405,38 @@ class _FormScreenState extends State<FormScreen> {
         locElement.coordinates = _mapWidgets[index]!.coordinates;
       }
     }
+  }
+
+  void parsePdfAndMail() async {
+
+    final pdf = pw.Document();
+
+    for(Uint8List image in widget._screenshots.values){
+      pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return pw.Expanded(
+                child: pw.Image(pw.MemoryImage(image), fit: pw.BoxFit.contain)
+            );
+          },
+      ));
+    }
+
+    final data = await pdf.save();
+    final base64data = base64Encode(data).toString();
+
+    String formName = widget._form['title'] as String;
+    widget._db.collection("email").add({
+      'to': 'ctamvakas@gmail.com',
+      'template': {
+        'name': 'default',
+        'data': {
+          'form_name': formName,
+          'user_email': 'user_email',
+          'filename': '${formName}_user_email_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf',
+          'content': base64data,
+        },
+      },
+    });
   }
 }
