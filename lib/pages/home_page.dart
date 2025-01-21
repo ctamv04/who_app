@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// TODO Make some kind of Widget factory for pages
 class _HomePageState extends State<HomePage> {
 
   @override
@@ -41,6 +42,7 @@ class _HomePageState extends State<HomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FormPage(
+                            key: UniqueKey(),
                             form: form,
                             pageNumber: 1,
                             computedPages: {},

@@ -1,5 +1,6 @@
 import 'package:who_app/models/selection.dart';
 import 'package:who_app/models/text.dart';
+import 'location.dart';
 
 abstract class FormElement {
 
@@ -18,8 +19,10 @@ abstract class FormElement {
     var type = json['type'] as String;
     if(type == "text"){
       return Text.fromJson(json);
-    }else{
+    }else if(type == "selection"){
       return Selection.fromJson(json);
+    }else{
+      return Location.fromJson(json);
     }
   }
 
