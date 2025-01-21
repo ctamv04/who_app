@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:screenshot/screenshot.dart';
@@ -21,22 +22,26 @@ class FormScreen extends StatefulWidget {
 
   final int _pageNumber;
 
+  final Map<int, Uint8List> _screenshots;
+
   final FirebaseFirestore _db;
 
-  final Map<int, Uint8List> _screenshots;
+  final FirebaseAuth _auth;
 
   FormScreen({
     super.key,
     required Map<String, dynamic> form,
     required int pageNumber,
     required Map<int, page_model.Page> computedPages,
+    Map<int, Uint8List>? screenshots,
     required FirebaseFirestore db,
-    Map<int, Uint8List>? screenshots
+    required FirebaseAuth auth
   }) : _form = form,
         _pageNumber = pageNumber,
         _computedPages = computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()]),
+        _screenshots = screenshots ?? {},
         _db = db,
-        _screenshots = screenshots ?? {};
+        _auth = auth;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -57,6 +62,35 @@ class _FormScreenState extends State<FormScreen> {
   late page_model.Page _page;
 
   final ScreenshotController _screenshotController = ScreenshotController();
+
+  @override
+  void initState() {
+
+    super.initState();
+    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) {
+
+      if (user == null) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Not authorized to access this page. Please sign in.'),
+            duration: Duration(seconds: 4),
+          ),
+        );
+
+        bool exists = false;
+        Navigator.popUntil(context, (route) {
+          if (route.settings.name == '/login') {
+            exists = true;
+          }
+          return true;
+        });
+        if (!exists) {
+          Navigator.pushNamed(context, '/login');
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -108,7 +142,8 @@ class _FormScreenState extends State<FormScreen> {
                         form: widget._form,
                         pageNumber: widget._pageNumber + 1,
                         computedPages: widget._computedPages,
-                        db: widget._db
+                        db: widget._db,
+                        auth: widget._auth,
                     ),
                   ),
                 );

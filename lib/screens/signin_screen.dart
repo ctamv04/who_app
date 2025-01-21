@@ -34,9 +34,12 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset(
-                "assets/who_logo.png",
-                scale: 0.05,
+              Container(
+                height: 250,
+                width: 250,
+                child: Image.asset(
+                  "assets/who_logo.png",
+                ),
               ),
               TextField(
                 decoration: InputDecoration(

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:who_app/models/location.dart';
 import 'package:who_app/screens/form_list_screen.dart';
-import 'package:who_app/screens/home_screen.dart';
 import 'package:who_app/screens/signin_screen.dart';
 import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
@@ -39,9 +38,9 @@ Future<void> main() async {
       ],
     ),
     title: 'WHO Form Manager',
-    home: HomeScreen(db: db, auth: auth),
+    home: auth.currentUser != null ? FormListScreen(db: db, auth: auth) : LoginScreen(db: db, auth: auth),
     routes: {
-      '/forms': (context) => FormListScreen(db: db),
+      '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/login': (context) => LoginScreen(db: db, auth: auth)
     },
   ));
