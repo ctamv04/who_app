@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'form_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -58,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     await widget._auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
 
-                    context.go('/forms');
+                    Navigator.pushReplacementNamed(context, '/forms');
                   } on FirebaseAuthException catch (e) {
 
                     ScaffoldMessenger.of(context).showSnackBar(
