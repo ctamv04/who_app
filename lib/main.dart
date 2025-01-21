@@ -12,6 +12,8 @@ import 'models/selection.dart';
 import 'models/text.dart' as text_model;
 import '../models/page.dart' as page_model;
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:go_router/go_router.dart';
+
 
 Future<void> main() async {
 
@@ -30,7 +32,7 @@ Future<void> main() async {
 
   final auth = FirebaseAuth.instance;
 
-  runApp(MaterialApp(
+  runApp(MaterialApp.router(
     builder: (context, child) => ResponsiveBreakpoints.builder(
       child: child!,
       breakpoints: [
@@ -39,10 +41,18 @@ Future<void> main() async {
       ],
     ),
     title: 'WHO Form Manager',
-    home: HomeScreen(db: db, auth: auth),
-    routes: {
-      '/forms': (context) => FormListScreen(db: db),
-      '/login': (context) => LoginScreen(db: db, auth: auth)
-    },
+    routerConfig: GoRouter(
+      routes: [
+        GoRoute(
+          path: '/forms',
+          builder: (context, state) => FormListScreen(db: db),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => LoginScreen(db: db, auth: auth),
+        ),
+      ],
+      initialLocation: auth.currentUser != null ? '/forms' : 'login'
+    ),
   ));
 }
