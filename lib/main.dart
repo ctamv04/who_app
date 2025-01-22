@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:who_app/models/location.dart';
 import 'package:who_app/screens/form_list_screen.dart';
+import 'package:who_app/screens/admin/form_list_screen_admin.dart';
+import 'package:who_app/screens/profile_screen.dart';
 import 'package:who_app/screens/signin_screen.dart';
 import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
@@ -28,6 +30,7 @@ Future<void> main() async {
   var forms = snap.docs.map((x) => form_model.Form.fromJson(x.data())).toList();
 
   final auth = FirebaseAuth.instance;
+  // auth.signOut();
 
   runApp(MaterialApp(
     builder: (context, child) => ResponsiveBreakpoints.builder(
@@ -41,7 +44,9 @@ Future<void> main() async {
     home: auth.currentUser != null ? FormListScreen(db: db, auth: auth) : LoginScreen(db: db, auth: auth),
     routes: {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
-      '/login': (context) => LoginScreen(db: db, auth: auth)
+      '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),
+      '/login': (context) => LoginScreen(db: db, auth: auth),
+      '/profile': (context) => ProfileScreen(db: db, auth: auth)
     },
   ));
 }

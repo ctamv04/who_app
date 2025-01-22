@@ -19,7 +19,6 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenScreenState();
 }
 
-// TODO Make some kind of Widget factory for pages
 class _SignUpScreenScreenState extends State<SignUpScreen> {
 
   final TextEditingController _emailController = TextEditingController();
@@ -68,7 +67,7 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                     } else if (e.code == 'too-many-requests') {
                       text = "Too many requests. Please try again later.";
                     }else{
-                      text = "An error has occured. Please try again later.";
+                      text = "An error has occurred. Please try again later.";
                     }
 
                     ScaffoldMessenger.of(context).showSnackBar(

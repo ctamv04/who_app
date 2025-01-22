@@ -67,7 +67,7 @@ class _FormScreenState extends State<FormScreen> {
   void initState() {
 
     super.initState();
-    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) {
+    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
 
       if (user == null) {
 

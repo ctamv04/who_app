@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'form_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,11 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
+
                   try {
 
                     await widget._auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
-
-                    Navigator.pushReplacementNamed(context, '/forms');
                   } on FirebaseAuthException catch (e) {
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -69,6 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         duration: Duration(seconds: 2),
                       ),
                     );
+                  }
+
+                  if((await widget._db.collection('users').doc(widget._auth.currentUser!.uid).get()).data()!['role'] == 'user'){
+                    Navigator.pushReplacementNamed(context, '/forms');
+                  }else{
+                    Navigator.pushReplacementNamed(context, '/forms_admin');
                   }
                 },
                 child: const Text('Sign in'),

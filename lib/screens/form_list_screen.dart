@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'admin/form_screen_admin.dart';
 import 'form_screen.dart';
 
 class FormListScreen extends StatefulWidget {
@@ -59,6 +60,15 @@ class _FormListScreenState extends State<FormListScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Forms"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            tooltip: 'View profile',
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+          )
+        ],
       ),
       body: StreamBuilder(
         stream: widget._db.collection("forms").snapshots(),
