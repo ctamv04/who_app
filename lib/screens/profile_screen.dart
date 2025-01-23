@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final TextEditingController _lastNameController = TextEditingController();
 
-  final TextEditingController _phoneController = TextEditingController();
+  late PhoneNumber _phoneNumber;
 
   @override
   void initState() {
@@ -70,7 +70,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         _firstNameController.text = userData['first_name'] as String;
         _lastNameController.text = userData['last_name'] as String;
-        _phoneController.text = userData['phone'] as String;
         TextEditingController emailController = TextEditingController();
         emailController.text = widget._auth.currentUser!.email!;
 
@@ -146,10 +145,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         )
                                     )
                                   ]),
-                                  InternationalPhoneNumberInput(
-                                    hintText: 'Phone',
-                                    initialValue: await PhoneNumber.getRegionInfoFromPhoneNumber(_phoneController.text),
-                                    onInputChanged: (_) {},
+                                  FutureBuilder(
+                                        future: PhoneNumber.getRegionInfoFromPhoneNumber(userData['phone'] as String),
+                                        builder: (context, snapshot2) {
+
+                                          if (!snapshot2.hasData) {
+                                            return CircularProgressIndicator();
+                                          }
+
+                                          _phoneNumber = snapshot2.data!;
+
+                                          return InternationalPhoneNumberInput(
+                                            selectorConfig: SelectorConfig(
+                                              selectorType: PhoneInputSelectorType.BOTTOM_SHEET
+                                            ),
+                                            hintText: 'Phone',
+                                            initialValue: _phoneNumber,
+                                            onInputChanged: (number) {
+                                              _phoneNumber = number;
+                                            },
+                                          );
+                                        }
                                   )
                                 ]
                             ),
@@ -168,17 +184,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 IconButton(
                                   icon: const Icon(Icons.check_circle),
                                   tooltip: 'Confirm',
-                                  onPressed: () {
+                                  onPressed: () async {
 
                                     if (_formKey.currentState!.validate()) {
 
-                                      Map<String, dynamic> data = {
+                                      snapshot.data!.reference.update({
                                         'first_name': _firstNameController.text,
                                         'last_name': _lastNameController.text,
-                                        'phone': _phoneController.text
-                                      };
-
-                                      snapshot.data!.reference.set(data);
+                                        'phone': _phoneNumber.phoneNumber!
+                                      });
                                       setState(() {
                                         _isEditing = false;
                                       });
@@ -208,7 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             body: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Row(
+                child: Column(
                     children: [
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
