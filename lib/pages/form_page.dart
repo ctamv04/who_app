@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
-import '../models/form.dart' as form_model;
+import 'package:who_app/pages/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
+import '../models/location.dart' as loc_model;
 
 class FormPage extends StatefulWidget {
 
@@ -44,6 +42,8 @@ class _FormPageState extends State<FormPage> {
 
   final Map<int, TextEditingController> _controllers = {};
 
+  final Map<int, MapWidget> _mapWidgets = {};
+
   late page_model.Page _page;
 
   @override
@@ -65,7 +65,7 @@ class _FormPageState extends State<FormPage> {
       seList += [
         Text(_page.description,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 14,
           ),
         ),
         Divider(
@@ -82,7 +82,7 @@ class _FormPageState extends State<FormPage> {
       actions.add(
           IconButton(
             icon: const Icon(Icons.arrow_forward),
-            tooltip: 'Submit form',
+            tooltip: 'Next page',
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 writeChanges();
@@ -122,14 +122,17 @@ class _FormPageState extends State<FormPage> {
         title: Text(_page.title),
         actions: actions
       ),
+      resizeToAvoidBottomInset: true,
       body: Form(
         key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: seList
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+                children: seList
+            ),
           ),
-        ),
+        )
       ),
     );
   }
@@ -140,12 +143,12 @@ class _FormPageState extends State<FormPage> {
       Text(element.title,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 22,
+          fontSize: 16,
         ),
       ),
       Text(element.subTitle,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 12,
         ),
       ),
     ];
@@ -324,14 +327,22 @@ class _FormPageState extends State<FormPage> {
             )
         );
       }
+    }else if(element.runtimeType == loc_model.Location){
+
+      loc_model.Location locElement = element as loc_model.Location;
+
+      if(!_mapWidgets.containsKey(index)){
+        _mapWidgets[index] = MapWidget(address: locElement.address, coordinates: locElement.coordinates, required: locElement.required);
+      }
+      elements.add(_mapWidgets[index]!);
     }
 
     return Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
+        padding: EdgeInsets.only(bottom: 20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: elements
-        ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: elements
+        )
     );
   }
 
@@ -343,12 +354,12 @@ class _FormPageState extends State<FormPage> {
       if(element.runtimeType == text_model.Text){
 
         (element as text_model.Text).text = _controllers[index]!.text;
-      }else{
+      }else if(element.runtimeType == Selection){
 
         Selection selElement = element as Selection;
 
         if(selElement.numSelections == 1){
-          selElement.selections = selElement.selections.map((k,v) => MapEntry(k, v == _radioSelections[index]));
+          selElement.selections = selElement.selections.map((k,v) => MapEntry(k, k == _radioSelections[index]));
 
           if(selElement.other && _radioSelections[index] == "other"){
             selElement.otherText = _controllers[index]!.text;
@@ -364,6 +375,12 @@ class _FormPageState extends State<FormPage> {
             selElement.otherText = "";
           }
         }
+      }else{
+
+        loc_model.Location locElement = element as loc_model.Location;
+
+        locElement.address = _mapWidgets[index]!.address;
+        locElement.coordinates = _mapWidgets[index]!.coordinates;
       }
     }
   }

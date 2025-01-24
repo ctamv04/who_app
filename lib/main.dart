@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:who_app/models/location.dart';
 import 'package:who_app/pages/home_page.dart';
 import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
-import 'models/page.dart' as page_model;
 import 'models/selection.dart';
 import 'models/text.dart' as text_model;
+import '../models/page.dart' as page_model;
 
 Future<void> main() async {
 
@@ -15,7 +16,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  var form = form_model.Form(title: "default2", pages: {1: page_model.Page(title: "page1", pageNumber: 1, description: "descriptionPage", elements: {1: text_model.Text(title: "text1", subTitle: "subtitle1", required: false, text: ""), 2: Selection(title: "text1", subTitle: "subtitle1", selections: {"option1": false, "option2": false}, required: true, other: true)}), 2: page_model.Page(title: "page2", pageNumber: 2, description: "descriptionPage", elements: {1: Selection(title: "text1", subTitle: "subtitle1", required: true, selections: {"option1": false, "option2": true, "option3": true}, numSelections: 2)})});
+  var form = form_model.Form(title: "map", pages: {1: page_model.Page(title: "page1", description: "descriptionPage", elements: {1: text_model.Text(title: "text1", subTitle: "subtitle1", required: false, text: ""), 2: Selection(title: "text1", subTitle: "subtitle1", selections: {"option1": false, "option2": false}, required: true, other: true), 3: Location(title: "loc", subTitle: "locsub")})});
   final json = form.toJson();
   final db = FirebaseFirestore.instance;
   db.collection("forms").add(json);
