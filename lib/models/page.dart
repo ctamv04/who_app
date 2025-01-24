@@ -31,7 +31,7 @@ class Page {
         'title': _title,
         'page_number': _pageNumber,
         'description': _description,
-        'elements': _elements?.map((k,v) => MapEntry(k.toString(), v.toJson()))
+        'elements': _elements?.map((k,v) => MapEntry(k.toString(), v.toJson())) ?? {}
       };
 
   String get title => _title;
