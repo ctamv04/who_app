@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'admin/form_screen_admin.dart';
+import 'package:who_app/screens/submissions_screen.dart';
 import 'form_screen.dart';
 
 class FormListScreen extends StatefulWidget {
@@ -21,54 +21,36 @@ class FormListScreen extends StatefulWidget {
   State<FormListScreen> createState() => _FormListScreenState();
 }
 
-// TODO Make some kind of Widget factory for pages
 class _FormListScreenState extends State<FormListScreen> {
 
   @override
-  void initState() {
-
-    super.initState();
-    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) {
-
-      if (user == null) {
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Not authorized to access this page. Please sign in.'),
-            duration: Duration(seconds: 4),
-          ),
-        );
-
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+
+    List<Widget> actions = [
+      TextButton(
+        child: Text("Sign in"),
+        onPressed: () {
+          Navigator.pushNamed(context, '/login');
+        },
+      )
+    ];
+    if(widget._auth.currentUser != null){
+      actions = [
+        IconButton(
+          icon: const Icon(Icons.account_circle),
+          tooltip: 'View profile',
+          onPressed: () {
+            Navigator.pushNamed(context, '/profile');
+          },
+        )
+      ];
+    }
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Forms"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            tooltip: 'View profile',
-            onPressed: () {
-              Navigator.pushNamed(context, '/profile');
-            },
-          )
-        ],
+        actions: actions
       ),
       body: StreamBuilder(
         stream: widget._db.collection("forms").snapshots(),
@@ -77,21 +59,22 @@ class _FormListScreenState extends State<FormListScreen> {
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {
 
-              final form = snapshot.data?.docs[index].data();
-              if(form != null){
+              final doc = snapshot.data?.docs[index];
+              if(doc != null){
+
+                final formTitle = doc.data()['title'];
                 return ListTile(
-                  title: Text(form['title']),
+                  title: Text(formTitle),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FormScreen(
-                            key: UniqueKey(),
-                            form: form,
-                            pageNumber: 1,
-                            computedPages: {},
-                            db: widget._db,
-                            auth: widget._auth,
+                        builder: (context) => SubmissionsScreen(
+                          key: UniqueKey(),
+                          formId: doc.id,
+                          formTitle: formTitle,
+                          db: widget._db,
+                          auth: widget._auth,
                         ),
                       ),
                     );

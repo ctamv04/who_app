@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:who_app/screens/admin/form_screen_admin.dart';
+import 'package:who_app/screens/admin/submissions_screen_admin.dart';
 import '../form_screen.dart';
 
 class FormListScreenAdmin extends StatefulWidget {
@@ -75,21 +76,20 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {
 
-              final form = snapshot.data?.docs[index].data();
-              if(form != null){
+              final doc = snapshot.data?.docs[index];
+              if(doc != null){
+                final formTitle = doc.data()['title'];
                 return ListTile(
-                  title: Text(form['title']),
+                  title: Text(formTitle),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FormScreenAdmin(
-                            key: UniqueKey(),
-                            form: form,
-                            pageNumber: 1,
-                            computedPages: {},
-                            db: widget._db,
-                            auth: widget._auth,
+                        builder: (context) => SubmissionsScreenAdmin(
+                          formId: doc.id,
+                          formTitle: formTitle,
+                          db: widget._db,
+                          auth: widget._auth,
                         ),
                       ),
                     );
@@ -99,6 +99,12 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
             }
           );
         }
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(40.0),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -78,6 +78,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
                 },
                 child: const Text('Sign in'),
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/forms');
+                  },
+                  child: Text("Continue as guest")
               )
             ]
         )

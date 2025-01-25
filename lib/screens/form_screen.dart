@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:uuid/uuid.dart';
 import 'package:who_app/screens/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
@@ -67,51 +70,9 @@ class _FormScreenState extends State<FormScreen> {
 
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  final Map<int, text_model.Text> _specialElements = {};
-
-  final Map<int, Widget> _specialWidgets = {};
-
   bool _specialCheckbox = false;
 
   late Map<String, dynamic> _userData;
-
-  @override
-  void initState() {
-
-    super.initState();
-    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
-
-      if (user == null) {
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Not authorized to access this page. Please sign in.'),
-            duration: Duration(seconds: 4),
-          ),
-        );
-
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-
-    for(TextEditingController controller in _controllers.values){
-      controller.dispose();
-    }
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +119,24 @@ class _FormScreenState extends State<FormScreen> {
                   widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
                   parsePdfAndMail();
 
+                  User? user = widget._auth.currentUser;
+                  String userId = "";
+                  if(user != null){
+                    userId = user.uid;
+                  }else{
+                    final path = (await getApplicationDocumentsDirectory()).path;
+                    final file = File('$path/guest_id.txt');
+                    if(await file.exists()){
+                      userId = await file.readAsString();
+                    }else{
+                      userId = Uuid().v4();
+                      await file.writeAsString(userId);
+                    }
+                  }
+
                   widget._form['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson()));
                   widget._form['form_id'] = widget._formId;
-                  widget._form['uid'] = widget._auth.currentUser!.uid;
+                  widget._form['uid'] = userId;
                   widget._form['date'] = DateTime.now().toString();
                   widget._db.collection("filled_forms").add(widget._form);
 
@@ -181,15 +157,14 @@ class _FormScreenState extends State<FormScreen> {
       );
     }
 
+    final user = widget._auth.currentUser;
     return FutureBuilder(
-        future: widget._db.collection('users').doc(widget._auth.currentUser!.uid).get(),
+        future: user != null ? widget._db.collection('users').doc(user.uid).get() : Future.value("not signed in"),
         builder: (context, snapshot) {
 
           if (!snapshot.hasData) {
             return CircularProgressIndicator();
           }
-
-          _userData = snapshot.data!.data()!;
 
           List<Widget> seList = [];
           if(_page.description.isNotEmpty){
@@ -210,27 +185,33 @@ class _FormScreenState extends State<FormScreen> {
               )
             ];
           }
-          for(FormElement element in _page.elements.values){
 
-            if(element.runtimeType == text_model.Text && (element as text_model.Text).special != ""){
+          if(snapshot.data != "not signed in"){
+            _userData = (snapshot.data! as DocumentSnapshot<Map<String, dynamic>>).data()!;
 
-              seList += [
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text("Use information from profile"),
-                    Checkbox(value: _specialCheckbox, onChanged: (value) {
-                      setState(() {
-                        _specialCheckbox = value ?? false;
-                      });
-                    })
-                  ],
-                )
-              ];
-              break;
+            for(FormElement element in _page.elements.values){
+
+              if(element.runtimeType == text_model.Text && (element as text_model.Text).special != ""){
+
+                seList += [
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text("Use information from profile"),
+                      Checkbox(value: _specialCheckbox, onChanged: (value) {
+                        setState(() {
+                          _specialCheckbox = value ?? false;
+                        });
+                      })
+                    ],
+                  )
+                ];
+                break;
+              }
             }
           }
+
           seList.add(SizedBox(height: 30));
           seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
@@ -285,23 +266,26 @@ class _FormScreenState extends State<FormScreen> {
         _controllers[index]!.text = txtElement.text;
       }
 
-      switch (txtElement.special) {
-        case 'institution':
-          _controllers[index]!.text = _specialCheckbox ? _userData['institution'] as String : "";
-        case 'name':
-          _controllers[index]!.text = _specialCheckbox ? _userData['name'] as String : "";
-        case 'position':
-          _controllers[index]!.text = _specialCheckbox ? _userData['position'] as String : "";
-        case 'phone':
-          _controllers[index]!.text = _specialCheckbox ? _userData['phone'] as String : "";
-        case 'email':
-          _controllers[index]!.text = _specialCheckbox ? widget._auth.currentUser!.email! : "";
-        case 'country':
-          _controllers[index]!.text = _specialCheckbox ? _userData['country'] as String : "";
-        case 'city':
-          _controllers[index]!.text = _specialCheckbox ? _userData['city'] as String : "";
-        case 'unit':
-          _controllers[index]!.text = _specialCheckbox ? _userData['unit'] as String : "";
+      final user = widget._auth.currentUser;
+      if(user != null){
+        switch (txtElement.special) {
+          case 'institution':
+            _controllers[index]!.text = _specialCheckbox ? _userData['institution'] as String : "";
+          case 'name':
+            _controllers[index]!.text = _specialCheckbox ? _userData['name'] as String : "";
+          case 'position':
+            _controllers[index]!.text = _specialCheckbox ? _userData['position'] as String : "";
+          case 'phone':
+            _controllers[index]!.text = _specialCheckbox ? _userData['phone'] as String : "";
+          case 'email':
+            _controllers[index]!.text = _specialCheckbox ? user.email! : "";
+          case 'country':
+            _controllers[index]!.text = _specialCheckbox ? _userData['country'] as String : "";
+          case 'city':
+            _controllers[index]!.text = _specialCheckbox ? _userData['city'] as String : "";
+          case 'unit':
+            _controllers[index]!.text = _specialCheckbox ? _userData['unit'] as String : "";
+        }
       }
 
       elements.add(TextFormField(
@@ -552,7 +536,12 @@ class _FormScreenState extends State<FormScreen> {
     final base64data = base64Encode(data).toString();
 
     String formName = widget._form['title'] as String;
-    String email = widget._auth.currentUser!.email!;
+    final user = widget._auth.currentUser;
+    String email = "";
+    if(user != null){
+      email = user.email!;
+    }
+
     widget._db.collection("email").add({
       'to': 'ctamvakas@gmail.com',
       'template': {

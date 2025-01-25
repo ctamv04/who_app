@@ -1,8 +1,7 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'form_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,17 +26,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
-  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _positionController = TextEditingController();
+
+  final TextEditingController _institutionController = TextEditingController();
 
   late PhoneNumber _phoneNumber;
+
+  final TextEditingController _cityController = TextEditingController();
+
+  final TextEditingController _countryController = TextEditingController();
+
+  final TextEditingController _unitController = TextEditingController();
+
+  late StreamSubscription<User?> _subscription;
 
   @override
   void initState() {
 
     super.initState();
-    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
+    _subscription = widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
 
       if (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'user') {
 
@@ -56,6 +65,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
+  void dispose() {
+
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     return FutureBuilder(
@@ -68,8 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         
         final userData = snapshot.data!.data()!;
 
-        _firstNameController.text = userData['first_name'] as String;
-        _lastNameController.text = userData['last_name'] as String;
+        _nameController.text = userData['name'] as String;
+        _positionController.text = userData['position'] as String;
+        _institutionController.text = userData['institution'] as String;
+        _cityController.text = userData['city'] as String;
+        _countryController.text = userData['country'] as String;
+        _unitController.text = userData['unit'] as String;
+
         TextEditingController emailController = TextEditingController();
         emailController.text = widget._auth.currentUser!.email!;
 
@@ -97,17 +118,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(children: [
-                                    Text('First name:',
+                                    Text('Full name:',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Expanded(
                                         child: TextFormField(
-                                          controller: _firstNameController,
+                                          controller: _nameController,
                                           validator: (value) {
                                             if (value == null || value.isEmpty) {
-                                              return "First name can't be empty";
+                                              return "Full name can't be empty";
                                             }
                                             return null;
                                           },
@@ -115,17 +136,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   ]),
                                   Row(children: [
-                                    Text('Last name:',
+                                    Text('Position:',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Expanded(
                                         child: TextFormField(
-                                          controller: _lastNameController,
+                                          controller: _positionController,
                                           validator: (value) {
                                             if (value == null || value.isEmpty) {
-                                              return "Last name can't be empty";
+                                              return "Position can't be empty";
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                    )
+                                  ]),
+                                  Row(children: [
+                                    Text('Institution:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: TextFormField(
+                                          controller: _institutionController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "Institution can't be empty";
                                             }
                                             return null;
                                           },
@@ -166,7 +205,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             },
                                           );
                                         }
-                                  )
+                                  ),
+                                  Row(children: [
+                                    Text('City:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: TextFormField(
+                                          controller: _cityController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "City can't be empty";
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                    )
+                                  ]),
+                                  Row(children: [
+                                    Text('Country:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: TextFormField(
+                                          controller: _countryController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "Country can't be empty";
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                    )
+                                  ]),
+                                  Row(children: [
+                                    Text('Unit of measurement:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: TextFormField(
+                                          controller: _unitController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "Unit of measurement can't be empty";
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                    )
+                                  ])
                                 ]
                             ),
                             Row(
@@ -189,9 +282,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     if (_formKey.currentState!.validate()) {
 
                                       snapshot.data!.reference.update({
-                                        'first_name': _firstNameController.text,
-                                        'last_name': _lastNameController.text,
-                                        'phone': _phoneNumber.phoneNumber!
+                                        'name': _nameController.text,
+                                        'position': _positionController.text,
+                                        'institution': _institutionController.text,
+                                        'phone': _phoneNumber.phoneNumber!,
+                                        'city': _cityController.text,
+                                        'country': _countryController.text,
+                                        'unit': _unitController.text,
                                       });
                                       setState(() {
                                         _isEditing = false;
@@ -228,20 +325,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(children: [
-                              Text('First name:',
+                              Text('Full name:',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(userData['first_name'] as String)
+                              Text(userData['name'] as String)
                             ]),
                             Row(children: [
-                              Text('Last name:',
+                              Text('Position:',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(userData['last_name'] as String)
+                              Text(userData['position'] as String)
+                            ]),
+                            Row(children: [
+                              Text('Institution:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(userData['institution'] as String)
                             ]),
                             Row(children: [
                               Text('Email:',
@@ -258,6 +363,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                               Text(userData['phone'] as String)
+                            ]),
+                            Row(children: [
+                              Text('City:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(userData['city'] as String)
+                            ]),
+                            Row(children: [
+                              Text('Country:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(userData['country'] as String)
+                            ]),
+                            Row(children: [
+                              Text('Unit of measurement:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(userData['unit'] as String)
                             ])
                           ]
                       ),

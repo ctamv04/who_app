@@ -23,13 +23,13 @@ class FormScreenAdmin extends StatefulWidget {
   FormScreenAdmin({
     super.key,
     required Map<String, dynamic> form,
-    required int pageNumber,
-    required Map<int, page_model.Page> computedPages,
+    int? pageNumber,
+    Map<int, page_model.Page>? computedPages,
     required FirebaseFirestore db,
     required FirebaseAuth auth
   }) : _form = form,
-        _pageNumber = pageNumber,
-        _computedPages = computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()]),
+        _pageNumber = pageNumber ?? 1,
+        _computedPages = (computedPages != null && pageNumber != null) ? (computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()])) : {},
         _db = db,
         _auth = auth;
 
@@ -123,7 +123,12 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
               children: seList
           ),
         ),
-      )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+        },
+        child: const Icon(Icons.edit_rounded),
+      ),
     );
   }
 
@@ -145,8 +150,11 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
 
     if(element.runtimeType == text_model.Text){
 
+      text_model.Text txtElement = element as text_model.Text;
+
       elements.add(TextFormField(
         readOnly: true,
+        initialValue: txtElement.text,
       ));
 
     }else if(element.runtimeType == Selection){
@@ -157,13 +165,21 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
 
       if(selElement.numSelections == 1){
 
+        String radioSelection = "";
+        for(String k in selElement.selections.keys){
+          if(selElement.selections[k]!) {
+            radioSelection = k;
+            break;
+          }
+        }
+
         for(String key in selElement.selections.keys){
           if(key != "other"){
             selections.add(
                 RadioListTile<String>(
                   title: Text(key),
                   value: key,
-                  groupValue: "",
+                  groupValue: radioSelection,
                   contentPadding: EdgeInsets.only(bottom: 1.0),
                   onChanged: null
                 )
@@ -177,9 +193,10 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
               RadioListTile<String>(
                 title: TextFormField(
                   readOnly: true,
+                  initialValue: selElement.otherText,
                 ),
                 value: "other",
-                groupValue: "",
+                groupValue: radioSelection,
                 contentPadding: EdgeInsets.only(bottom: 1.0),
                 onChanged: null
               )
@@ -199,7 +216,7 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
             selections.add(
                 CheckboxListTile(
                   title: Text(key),
-                  value: false,
+                  value: selElement.selections[key],
                   contentPadding: EdgeInsets.only(bottom: 1.0),
                   onChanged: null
                 )
@@ -213,8 +230,9 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
               CheckboxListTile(
                 title: TextFormField(
                   readOnly: true,
+                  initialValue: selElement.otherText,
                 ),
-                value: false,
+                value: selElement.selections["other"],
                 contentPadding: EdgeInsets.only(bottom: 1.0),
                 onChanged: null
               )
