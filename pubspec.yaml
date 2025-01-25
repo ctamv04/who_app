@@ -46,6 +46,7 @@ dependencies:
   screenshot: ^3.0.0
   pdf: ^3.11.1
   intl_phone_number_input: ^0.7.4
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
