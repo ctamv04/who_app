@@ -5,7 +5,7 @@ class Selection extends FormElement {
   int _numSelections;
   bool _other;
   Map<String, bool> _selections;
-  String? _otherText;
+  String _otherText;
 
   Selection({
     required super.title,
@@ -18,7 +18,7 @@ class Selection extends FormElement {
   }) : _numSelections = (numSelections != null && numSelections > 0) ? numSelections : 1,
         _other = other ?? false,
         _selections = ((other ?? false) && (selections["other"] == null)) ? (selections..["other"] = false) : selections,
-        _otherText = ((other ?? false) && otherText != null || (selections["other"] ?? false)) ? otherText : "";
+        _otherText = ((other ?? false) && otherText != null || (selections["other"] ?? false)) ? (otherText ?? "") : "";
 
   factory Selection.fromJson(Map<String, dynamic> json) {
 
@@ -51,6 +51,6 @@ class Selection extends FormElement {
   Map<String, bool> get selections => _selections;
   String? get otherText => _otherText;
 
-  set otherText(String? otherText) => _otherText = (_other && otherText != null || (_selections["other"] ?? false)) ? otherText : "";
+  set otherText(String? otherText) => _otherText = (_other && otherText != null || (_selections["other"] ?? false)) ? (otherText ?? "") : "";
   set selections(Map<String, bool> selections) => _selections = (_other && (selections["other"] == null)) ? (selections..["other"] = false) : selections;
 }
