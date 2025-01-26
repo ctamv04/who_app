@@ -1,13 +1,25 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:who_app/pages/map_widget.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:uuid/uuid.dart';
+import 'package:who_app/screens/map_widget.dart';
 import '../models/form_element.dart';
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
 import '../models/location.dart' as loc_model;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart';
 
-class FormPage extends StatefulWidget {
+class FormScreen extends StatefulWidget {
+
+  final String _formId;
 
   final Map<String, dynamic> _form;
 
@@ -15,24 +27,34 @@ class FormPage extends StatefulWidget {
 
   final int _pageNumber;
 
+  final Map<int, Uint8List> _screenshots;
+
   final FirebaseFirestore _db;
 
-  FormPage({
+  final FirebaseAuth _auth;
+
+  FormScreen({
     super.key,
+    required String formId,
     required Map<String, dynamic> form,
     required int pageNumber,
     required Map<int, page_model.Page> computedPages,
-    required FirebaseFirestore db
-  }) : _form = form,
+    Map<int, Uint8List>? screenshots,
+    required FirebaseFirestore db,
+    required FirebaseAuth auth,
+  }) :  _formId = formId,
+        _form = form,
         _pageNumber = pageNumber,
         _computedPages = computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()]),
-        _db = db;
+        _screenshots = screenshots ?? {},
+        _db = db,
+        _auth = auth;
 
   @override
-  State<FormPage> createState() => _FormPageState();
+  State<FormScreen> createState() => _FormScreenState();
 }
 
-class _FormPageState extends State<FormPage> {
+class _FormScreenState extends State<FormScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
@@ -46,36 +68,16 @@ class _FormPageState extends State<FormPage> {
 
   late page_model.Page _page;
 
-  @override
-  void dispose() {
+  final ScreenshotController _screenshotController = ScreenshotController();
 
-    for(TextEditingController controller in _controllers.values){
-      controller.dispose();
-    }
-    super.dispose();
-  }
+  bool _specialCheckbox = false;
+
+  late Map<String, dynamic> _userData;
 
   @override
   Widget build(BuildContext context) {
 
     _page = widget._computedPages[widget._pageNumber]!;
-
-    List<Widget> seList = [];
-    if(_page.description.isNotEmpty){
-      seList += [
-        Text(_page.description,
-          style: TextStyle(
-            fontSize: 14,
-          ),
-        ),
-        Divider(
-          color: Colors.black,
-          thickness: 1,
-        ),
-        SizedBox(height: 30)
-      ];
-    }
-    seList += _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
     List<Widget> actions = [];
     if(widget._form['pages'][(widget._pageNumber+1).toString()] != null){
@@ -83,17 +85,23 @@ class _FormPageState extends State<FormPage> {
           IconButton(
             icon: const Icon(Icons.arrow_forward),
             tooltip: 'Next page',
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
+
                 writeChanges();
+                widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FormPage(
+                    builder: (context) => FormScreen(
+                        formId: widget._formId,
                         form: widget._form,
                         pageNumber: widget._pageNumber + 1,
                         computedPages: widget._computedPages,
-                        db: widget._db
+                        screenshots: widget._screenshots,
+                        db: widget._db,
+                        auth: widget._auth,
                     ),
                   ),
                 );
@@ -104,11 +112,44 @@ class _FormPageState extends State<FormPage> {
     }else{
       actions.add(
           TextButton(
-            onPressed: () {
+            onPressed: () async {
                 if (_formKey.currentState!.validate()) {
+
                   writeChanges();
-                  widget._db.collection("filled_forms").add(widget._form..['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson())));
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
+                  widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
+                  parsePdfAndMail();
+
+                  User? user = widget._auth.currentUser;
+                  String userId = "";
+                  if(user != null){
+                    userId = user.uid;
+                  }else{
+                    final path = (await getApplicationDocumentsDirectory()).path;
+                    final file = File('$path/guest_id.txt');
+                    if(await file.exists()){
+                      userId = await file.readAsString();
+                    }else{
+                      userId = Uuid().v4();
+                      await file.writeAsString(userId);
+                    }
+                  }
+
+                  widget._form['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson()));
+                  widget._form['form_id'] = widget._formId;
+                  widget._form['uid'] = userId;
+                  widget._form['date'] = DateTime.now().toString();
+                  widget._db.collection("filled_forms").add(widget._form);
+
+                  bool exists = false;
+                  Navigator.popUntil(context, (route) {
+                    if (route.settings.name == '/forms') {
+                      exists = true;
+                    }
+                    return true;
+                  });
+                  if (!exists) {
+                    Navigator.pushNamed(context, '/forms');
+                  }
                 }
             },
             child: const Text('Submit'),
@@ -116,28 +157,91 @@ class _FormPageState extends State<FormPage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(_page.title),
-        actions: actions
-      ),
-      resizeToAvoidBottomInset: true,
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-                children: seList
+    final user = widget._auth.currentUser;
+    return FutureBuilder(
+        future: user != null ? widget._db.collection('users').doc(user.uid).get() : Future.value("not signed in"),
+        builder: (context, snapshot) {
+
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator();
+          }
+
+          List<Widget> seList = [];
+          if(_page.description.isNotEmpty){
+            seList += [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(_page.description,
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                  Divider(
+                    color: Colors.black,
+                    thickness: 1,
+                  ),
+                ],
+              )
+            ];
+          }
+
+          if(snapshot.data != "not signed in"){
+            _userData = (snapshot.data! as DocumentSnapshot<Map<String, dynamic>>).data()!;
+
+            for(FormElement element in _page.elements.values){
+
+              if(element.runtimeType == text_model.Text && (element as text_model.Text).special != ""){
+
+                seList += [
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text("Use information from profile"),
+                      Checkbox(value: _specialCheckbox, onChanged: (value) {
+                        setState(() {
+                          _specialCheckbox = value ?? false;
+                        });
+                      })
+                    ],
+                  )
+                ];
+                break;
+              }
+            }
+          }
+
+          seList.add(SizedBox(height: 30));
+          seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+
+          return Scaffold(
+            appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: Text(_page.title),
+                actions: actions
             ),
-          ),
-        )
-      ),
+            resizeToAvoidBottomInset: true,
+            body: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Screenshot(
+                      controller: _screenshotController,
+                      child: Column(
+                          children: seList
+                      ),
+                    ),
+                  ),
+                )
+            ),
+          );
+        }
     );
   }
 
-  Widget makeWidget(int index, FormElement element){
+  Widget makeWidget(int index, FormElement element) {
 
     List<Widget> elements = [
       Text(element.title,
@@ -155,8 +259,33 @@ class _FormPageState extends State<FormPage> {
 
     if(element.runtimeType == text_model.Text){
 
+      text_model.Text txtElement = element as text_model.Text;
+
       if(_controllers[index] == null){
         _controllers[index] = TextEditingController();
+        _controllers[index]!.text = txtElement.text;
+      }
+
+      final user = widget._auth.currentUser;
+      if(user != null){
+        switch (txtElement.special) {
+          case 'institution':
+            _controllers[index]!.text = _specialCheckbox ? _userData['institution'] as String : "";
+          case 'name':
+            _controllers[index]!.text = _specialCheckbox ? _userData['name'] as String : "";
+          case 'position':
+            _controllers[index]!.text = _specialCheckbox ? _userData['position'] as String : "";
+          case 'phone':
+            _controllers[index]!.text = _specialCheckbox ? _userData['phone'] as String : "";
+          case 'email':
+            _controllers[index]!.text = _specialCheckbox ? user.email! : "";
+          case 'country':
+            _controllers[index]!.text = _specialCheckbox ? _userData['country'] as String : "";
+          case 'city':
+            _controllers[index]!.text = _specialCheckbox ? _userData['city'] as String : "";
+          case 'unit':
+            _controllers[index]!.text = _specialCheckbox ? _userData['unit'] as String : "";
+        }
       }
 
       elements.add(TextFormField(
@@ -165,11 +294,12 @@ class _FormPageState extends State<FormPage> {
         ),
         controller: _controllers[index],
         validator: (value) {
-          if (_page.elements![index]!.required && (value == null || value.isEmpty)) {
+          if (_page.elements[index]!.required && (value == null || value.isEmpty)) {
             return 'This field is required.';
           }
           return null;
         },
+        readOnly: _specialCheckbox,
       ));
 
     }else if(element.runtimeType == Selection){
@@ -211,6 +341,7 @@ class _FormPageState extends State<FormPage> {
 
           if(_controllers[index] == null){
             _controllers[index] = TextEditingController();
+            _controllers[index]!.text = selElement.otherText!;
           }
 
           selections.add(
@@ -279,6 +410,7 @@ class _FormPageState extends State<FormPage> {
 
           if(_controllers[index] == null){
             _controllers[index] = TextEditingController();
+            _controllers[index]!.text = selElement.otherText!;
           }
 
           selections.add(
@@ -383,5 +515,44 @@ class _FormPageState extends State<FormPage> {
         locElement.coordinates = _mapWidgets[index]!.coordinates;
       }
     }
+  }
+
+  void parsePdfAndMail() async {
+
+    final pdf = pw.Document();
+
+    for(Uint8List image in widget._screenshots.values){
+      pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return pw.Expanded(
+                child: pw.Image(pw.MemoryImage(image), fit: pw.BoxFit.contain)
+            );
+          },
+      ));
+    }
+
+    final data = await pdf.save();
+    final base64data = base64Encode(data).toString();
+
+    String formName = widget._form['title'] as String;
+    final user = widget._auth.currentUser;
+    String email = "";
+    if(user != null){
+      email = user.email!;
+    }
+
+    widget._db.collection("email").add({
+      'to': 'ctamvakas@gmail.com',
+      'template': {
+        'name': 'default',
+        'data': {
+          'form_name': formName,
+          'user_email': email,
+          'filename': '$formName$email${DateFormat('yyyy-MM-dd').format(DateTime.now())}.pdf',
+          'content': base64data,
+        },
+      },
+    });
   }
 }

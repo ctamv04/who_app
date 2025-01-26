@@ -4,12 +4,16 @@ class Text extends FormElement {
 
   String _text;
 
+  String _special;
+
   Text({
     required super.title,
     super.subTitle,
     super.required,
-    String? text
-  }) : _text = text ?? "";
+    String? text,
+    String? special
+  }) : _text = text ?? "",
+        _special = special ?? "";
 
   factory Text.fromJson(Map<String, dynamic> json) {
 
@@ -18,6 +22,7 @@ class Text extends FormElement {
       subTitle: json['subtitle'] as String,
       required: json['required'] as bool,
       text: json['text'] as String,
+      special: json['special'] as String
     );
   }
 
@@ -28,10 +33,12 @@ class Text extends FormElement {
         'subtitle': super.subTitle,
         'required': super.required,
         'type': "text",
-        'text': _text
+        'text': _text,
+        'special': _special
       };
 
   String get text => _text;
+  String get special => _special;
 
   set text(String text) => _text = text;
 }
