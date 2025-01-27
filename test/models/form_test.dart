@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:who_app/models/form.dart' as form_model;
 import 'package:who_app/models/page.dart' as page_model;
-import 'package:who_app/models/text.dart';
-import 'package:flutter/foundation.dart';
 
 void main(){
 
@@ -14,7 +12,6 @@ void main(){
 
   final testPage = page_model.Page(
     title: testPageTitle, 
-    pageNumber: testPageNumber,
     elements: {}
   );
   final testJson = {
@@ -60,7 +57,6 @@ void main(){
     final pageJson = json['pages'][testPageKey.toString()];
 
     expect(pageJson['title'], testPageTitle);
-    expect(pageJson['page_number'], testPageNumber);
     expect(pageJson['elements'], isEmpty);
   });
 
