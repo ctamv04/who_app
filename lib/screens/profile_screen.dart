@@ -117,44 +117,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(children: [
-                                    Text('Full name:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Expanded(
-                                        child: TextFormField(
-                                          controller: _nameController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "Full name can't be empty";
-                                            }
-                                            return null;
-                                          },
+                                  Row(
+                                      children: [
+                                        Text('Full name:  ',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Expanded(
+                                            child: TextFormField(
+                                              controller: _nameController,
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return "Full name can't be empty";
+                                                }
+                                                return null;
+                                              },
+                                            )
                                         )
-                                    )
-                                  ]),
-                                  Row(children: [
-                                    Text('Position:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Expanded(
-                                        child: TextFormField(
-                                          controller: _positionController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "Position can't be empty";
-                                            }
-                                            return null;
-                                          },
+                                      ]),
+                                  Row(
+                                      children: [
+                                        Text('Position:  ',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Expanded(
+                                            child: TextFormField(
+                                              controller: _positionController,
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return "Position can't be empty";
+                                                }
+                                                return null;
+                                              },
+                                            )
                                         )
-                                    )
-                                  ]),
+                                      ]),
                                   Row(children: [
-                                    Text('Institution:',
+                                    Text('Institution:  ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -172,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   ]),
                                   Row(children: [
-                                    Text('Email:',
+                                    Text('Email:  ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -189,10 +191,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         builder: (context, snapshot2) {
 
                                           if (!snapshot2.hasData) {
-                                            return CircularProgressIndicator();
+                                            _phoneNumber = PhoneNumber(isoCode: "GR");
+                                          }else{
+                                            _phoneNumber = snapshot2.data!;
                                           }
-
-                                          _phoneNumber = snapshot2.data!;
 
                                           return InternationalPhoneNumberInput(
                                             selectorConfig: SelectorConfig(
@@ -207,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         }
                                   ),
                                   Row(children: [
-                                    Text('City:',
+                                    Text('City:  ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -225,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   ]),
                                   Row(children: [
-                                    Text('Country:',
+                                    Text('Country:  ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -243,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   ]),
                                   Row(children: [
-                                    Text('Unit of measurement:',
+                                    Text('Unit of measurement:  ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),

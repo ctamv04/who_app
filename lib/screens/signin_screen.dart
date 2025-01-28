@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Padding(
         padding: const EdgeInsets.all(40.0),
         child: Column(
+            spacing: 10.0,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
@@ -81,9 +82,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/forms');
+                    Navigator.pushNamed(context, '/signup');
                   },
-                  child: Text("Continue as guest")
+                  child: Text("Create an account")
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forms');
+                      },
+                      child: Text("Continue as guest")
+                  )
+                ],
               )
             ]
         )

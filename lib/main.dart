@@ -10,6 +10,7 @@ import 'package:who_app/screens/form_list_screen.dart';
 import 'package:who_app/screens/admin/form_list_screen_admin.dart';
 import 'package:who_app/screens/profile_screen.dart';
 import 'package:who_app/screens/signin_screen.dart';
+import 'package:who_app/screens/signup_screen.dart';
 import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
 import 'models/text.dart' as text_model;
@@ -97,6 +98,7 @@ Future<void> main() async {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),
       '/login': (context) => LoginScreen(db: db, auth: auth),
+      '/signup': (context) => SignupScreen(db: db, auth: auth),
       '/profile': (context) => ProfileScreen(db: db, auth: auth)
     },
   ));
