@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:screenshot/screenshot.dart';
@@ -77,6 +78,30 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
 
   late int _selectedElement;
 
+  final TextEditingController _pageTitleController = TextEditingController();
+
+  final TextEditingController _pageDescriptionController = TextEditingController();
+
+  String _newElementType = "";
+
+  int _newElementIndex = -1;
+
+  bool _newElementRequired = false;
+
+  bool _newElementOther = false;
+
+  bool _newOption = false;
+
+  int _newElementNumSelections = 1;
+
+  final List<String> _newElementOptions = [];
+
+  final TextEditingController _optionController = TextEditingController();
+
+  final TextEditingController _titleController = TextEditingController();
+
+  final TextEditingController _descriptionController = TextEditingController();
+
   @override
   void initState() {
 
@@ -97,56 +122,83 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         }
       }
     });
+
+    _page = page_model.Page.fromJson(widget._form['pages'][widget._pageNumber.toString()]);
   }
 
   @override
   Widget build(BuildContext context) {
 
-    List<Widget> seList = [];
-    if(_page.description.isNotEmpty){
-      seList += [
-        Text(_page.description,
-          style: TextStyle(
-            fontSize: 14,
-          ),
-        ),
-        Divider(
-          color: Colors.black,
-          thickness: 1,
-        ),
-        SizedBox(height: 30)
-      ];
-    }
-    seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    _pageTitleController.text = _page.title;
+    _pageDescriptionController.text = _page.description;
 
-    List<Widget> actions = [];
-    if(widget._form['pages'][(widget._pageNumber+1).toString()] != null){
-      actions.add(
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            tooltip: 'Next page',
-            onPressed: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FormScreenAdmin(
-                    form: widget._form,
-                    pageNumber: widget._pageNumber + 1,
-                    computedPages: widget._computedPages,
-                    db: widget._db,
-                    auth: widget._auth,
-                  ),
-                ),
-              );
-            },
-          )
-      );
+    List<Widget> seList = [];
+    seList += [
+      TextFormField(
+        controller: _pageDescriptionController,
+        decoration: InputDecoration(
+          hintText: "Enter Page description",
+        ),
+      ),
+      Divider(
+        color: Colors.black,
+        thickness: 1,
+      ),
+      SizedBox(height: 30)
+    ];
+    List<Widget> elements = _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    if(_newElementType != ""){
+      elements.insert(_newElementIndex, makeNewElement(_newElementType));
     }
+
+    seList += elements;
+
+    List<Widget> actions = [
+      IconButton(
+        icon: widget._form['pages'][(widget._pageNumber+1).toString()] != null ? Icon(Icons.arrow_forward) : Icon(Icons.add),
+        tooltip: 'Next page',
+        onPressed: () async {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FormEditingScreen(
+                form: widget._form,
+                pageNumber: widget._pageNumber + 1,
+                db: widget._db,
+                auth: widget._auth,
+              ),
+            ),
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.check),
+        tooltip: 'Create Form',
+        onPressed: () async {
+
+          bool exists = false;
+          Navigator.popUntil(context, (route) {
+            if (route.settings.name == '/forms_admin') {
+              exists = true;
+            }
+            return true;
+          });
+          if (!exists) {
+            Navigator.pushNamed(context, '/forms_admin');
+          }
+        },
+      )
+    ];
 
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text(_page.title),
+            title: TextFormField(
+              controller: _pageTitleController,
+              decoration: InputDecoration(
+                hintText: "Enter Page title",
+              ),
+            ),
             actions: actions
         ),
         resizeToAvoidBottomInset: true,
@@ -329,19 +381,35 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                 menuChildren: [
                   MenuItemButton(
                     child: Text("Text field"),
-                    onPressed: () => _activate(MenuEntry.about),
+                    onPressed: () => setState(() {
+                      _newElementType = "text";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
                   ),
                   MenuItemButton(
                     child: Text("Radio buttons"),
-                    onPressed: () => _activate(MenuEntry.about),
+                    onPressed: () => setState(() {
+                      _newElementType = "radio";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
                   ),
                   MenuItemButton(
                     child: Text("Checkboxes"),
-                    onPressed: () => _activate(MenuEntry.about),
+                    onPressed: () => setState(() {
+                      _newElementType = "checkbox";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
                   ),
                   MenuItemButton(
                     child: Text("Location field"),
-                    onPressed: () => _activate(MenuEntry.about),
+                    onPressed: () => setState(() {
+                      _newElementType = "location";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
                   ),
                 ],
                 builder: (BuildContext context, MenuController controller, Widget? child) {
@@ -362,12 +430,245 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       );
     }
 
-    Padding(
+    return Padding(
         padding: EdgeInsets.only(bottom: 20),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: finalElements
         )
+    );
+  }
+
+  Widget makeNewElement(String type) {
+
+    List<Widget> elements = [
+      Row(
+        children: [
+          Text("Title  ",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          TextFormField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              hintText: "Your answer",
+            ),
+          ),
+          Row(
+            children: [
+              Checkbox(
+                  value: _newElementRequired,
+                  onChanged: (value) {
+                    setState(() {
+                      _newElementRequired = value ?? false;
+                    });
+                  }
+              ),
+              Text("Required")
+            ],
+          )
+        ],
+      ),
+      Row(
+        children: [
+          Text("Description  ",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          TextFormField(
+            controller: _descriptionController,
+            decoration: InputDecoration(
+              hintText: "Your answer",
+            ),
+          )
+        ],
+      )
+    ];
+
+    if(type == "text"){
+
+      elements.add(
+          TextFormField(
+            readOnly: true,
+          )
+      );
+    }else if(type == "location"){
+
+      elements.add(
+          Stack(
+              children: [
+                MapWidget(address: "", coordinates: LatLng(45.4685, 9.1824), required: false),
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.transparent,
+                  ),
+                ),
+              ]
+          )
+      );
+    }else{
+
+      final buttons = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.cancel),
+            tooltip: 'Cancel',
+            onPressed: () {
+              setState(() {
+                _newOption = false;
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.check_circle),
+            tooltip: 'Confirm',
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                _newOption = false;
+                _newElementOptions.add(_optionController.text);
+                _optionController.text = "";
+              }
+            },
+          )
+        ],
+      );
+
+      List<Widget> selections = [];
+      if(type == "radio"){
+
+        for(String option in _newElementOptions){
+          selections.add(
+              RadioListTile<String>(
+                  title: TextFormField(
+                    readOnly: true,
+                    initialValue: option,
+                  ),
+                  value: option,
+                  groupValue: "",
+                  contentPadding: EdgeInsets.only(bottom: 1.0),
+                  onChanged: null
+              )
+          );
+        }
+
+        if(_newOption){
+
+          selections.add(
+              RadioListTile<String>(
+                  title: TextFormField(
+                    controller: _optionController,
+                  ),
+                  value: "new",
+                  groupValue: "",
+                  contentPadding: EdgeInsets.only(bottom: 1.0),
+                  onChanged: null
+              )
+          );
+          _newOption = false;
+        }
+      }else if(type == "checkbox"){
+
+        for(String option in _newElementOptions){
+          selections.add(
+              CheckboxListTile(
+                  title: TextFormField(
+                    readOnly: true,
+                    initialValue: option,
+                  ),
+                  value: false,
+                  contentPadding: EdgeInsets.only(bottom: 1.0),
+                  onChanged: null
+              )
+          );
+        }
+
+        if(_newOption){
+
+          selections.add(
+            Row(
+              children: [
+                CheckboxListTile(
+                    title: TextFormField(
+                      controller: _optionController,
+                    ),
+                    value: false,
+                    contentPadding: EdgeInsets.only(bottom: 1.0),
+                    onChanged: null
+                ),
+                buttons
+              ],
+            )
+          );
+          _newOption = false;
+        }
+      }
+
+      selections.add(
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _newOption = true;
+              });
+            },
+            icon: Icon(Icons.add),
+          )
+      );
+
+      elements.add(
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: selections
+          )
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+                child: Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: elements
+                    )
+                )
+            )
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.cancel),
+              tooltip: 'Cancel',
+              onPressed: () {
+                setState(() {
+                  _newElementType = "";
+                  _newElementIndex = -1;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.check_circle),
+              tooltip: 'Confirm',
+              onPressed: () {
+
+                if (_formKey.currentState!.validate()) {
+
+
+                }
+              },
+            )
+          ],
+        )
+      ],
     );
   }
 }
