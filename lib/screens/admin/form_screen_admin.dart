@@ -83,7 +83,7 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
         SizedBox(height: 30)
       ];
     }
-    seList += _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
     List<Widget> actions = [];
     if(widget._form['pages'][(widget._pageNumber+1).toString()] != null){
@@ -123,12 +123,7 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
               children: seList
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-        },
-        child: const Icon(Icons.edit_rounded),
-      ),
+      )
     );
   }
 

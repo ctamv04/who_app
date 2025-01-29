@@ -111,7 +111,7 @@ class _FormScreenState extends State<FormScreen> {
       );
     }else{
       actions.add(
-          TextButton(
+          IconButton(
             onPressed: () async {
                 if (_formKey.currentState!.validate()) {
 
@@ -152,7 +152,7 @@ class _FormScreenState extends State<FormScreen> {
                   }
                 }
             },
-            child: const Text('Submit'),
+            icon: Icon(Icons.check),
           )
       );
     }
