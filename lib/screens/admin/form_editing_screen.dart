@@ -146,88 +146,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       ),
       SizedBox(height: 30)
     ];
-
-    List<Widget> elements = [];
-    final pageElements = _page.elements.entries.toList();
-    int index = 0;
-    do{
-
-      final newElementMenu = Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          MenuAnchor(
-            menuChildren: [
-              MenuItemButton(
-                child: Text("Text field"),
-                onPressed: () => setState(() {
-                  _newElementType = "text";
-                  _newElementIndex = index;
-                  _selectedElement = -1;
-                }),
-              ),
-              MenuItemButton(
-                child: Text("Radio buttons"),
-                onPressed: () => setState(() {
-                  _newElementType = "radio";
-                  _newElementIndex = index;
-                  _selectedElement = -1;
-                }),
-              ),
-              MenuItemButton(
-                child: Text("Checkboxes"),
-                onPressed: () => setState(() {
-                  _newElementType = "checkbox";
-                  _newElementIndex = index;
-                  _selectedElement = -1;
-                }),
-              ),
-              MenuItemButton(
-                child: Text("Location field"),
-                onPressed: () => setState(() {
-                  _newElementType = "location";
-                  _newElementIndex = index;
-                  _selectedElement = -1;
-                }),
-              ),
-            ],
-            builder: (BuildContext context, MenuController controller, Widget? child) {
-              return IconButton(
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-                icon: Icon(Icons.add),
-              );
-            },
-          )
-        ],
-      );
-
-      final entry = pageElements[index];
-      if(_newElementType == "" && index >= _page.elements.length){
-
-        elements.add(newElementMenu);
-      }else{
-
-        final element = makeWidget(entry.key, entry.value);
-        if(_newElementType == "" && _selectedElement == entry.key){
-          elements.add(
-            Column(
-              children: [
-                element,
-                newElementMenu
-              ],
-            )
-          );
-        }else{
-          elements.add(element);
-        }
-      }
-      index++;
-    }while(index < pageElements.length);
+    List<Widget> elements = _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
     if(_newElementType != ""){
       elements.insert(_newElementIndex, makeNewElement(_newElementType));
     }
@@ -452,6 +371,64 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         },
       )
     ];
+
+    if(index != _page.elements.length && _selectedElement == index){
+      finalElements.add(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              MenuAnchor(
+                menuChildren: [
+                  MenuItemButton(
+                    child: Text("Text field"),
+                    onPressed: () => setState(() {
+                      _newElementType = "text";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
+                  ),
+                  MenuItemButton(
+                    child: Text("Radio buttons"),
+                    onPressed: () => setState(() {
+                      _newElementType = "radio";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
+                  ),
+                  MenuItemButton(
+                    child: Text("Checkboxes"),
+                    onPressed: () => setState(() {
+                      _newElementType = "checkbox";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
+                  ),
+                  MenuItemButton(
+                    child: Text("Location field"),
+                    onPressed: () => setState(() {
+                      _newElementType = "location";
+                      _newElementIndex = index;
+                      _selectedElement = -1;
+                    }),
+                  ),
+                ],
+                builder: (BuildContext context, MenuController controller, Widget? child) {
+                  return IconButton(
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    icon: Icon(Icons.add),
+                  );
+                },
+              )
+            ],
+          )
+      );
+    }
 
     return Padding(
         padding: EdgeInsets.only(bottom: 20),
