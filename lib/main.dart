@@ -16,6 +16,7 @@ import 'models/text.dart' as text_model;
 import '../models/page.dart' as page_model;
 import 'package:responsive_framework/responsive_framework.dart';
 import '../models/selection.dart';
+import '../models/image_element.dart' as image_model;
 
 Future<void> main() async {
 
@@ -26,6 +27,28 @@ Future<void> main() async {
 
   final db = FirebaseFirestore.instance;
 
+
+
+//   var form = form_model.Form(
+//   title: "Form with Multiple Images",
+//   pages: {
+//     1: page_model.Page(
+//       title: "Image Upload Page",
+//       elements: {
+//         2: image_model.ImagePickerElement(
+//           title: "Upload Images",
+//           subTitle: "Select images", 
+//           fileNames: [],
+//           downloadUrls: [], 
+//         ),
+//       },
+//     ),
+//   },
+// );
+
+// final json = form.toJson();
+// print(json);
+// db.collection("forms").add(json);
   // var form = form_model.Form(title: "map", pages: {1: page_model.Page(title: "page1", description: "descriptionPage", elements: {1: text_model.Text(title: "text1", subTitle: "subtitle1", required: false, text: ""), 2: Selection(title: "text1", subTitle: "subtitle1", selections: {"option1": false, "option2": false}, required: true, other: true), 3: Location(title: "loc", subTitle: "locsub")})});
   // final json = form.toJson();
   // db.collection("forms").add(json);
@@ -69,6 +92,9 @@ Future<void> main() async {
   // final json = form.toJson();
   // db.collection("forms").add(json);
 
+
+
+  
   final auth = FirebaseAuth.instance;
   // auth.signOut();
 
@@ -92,7 +118,7 @@ Future<void> main() async {
       ],
     ),
     title: 'WHO Form Manager',
-    home: home,
+    home: home, //ImageUploadPage(db: db),
     routes: {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),

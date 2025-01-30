@@ -14,8 +14,14 @@ import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/text.dart' as text_model;
 import '../models/location.dart' as loc_model;
+import '../models/image_element.dart' as image_model;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'image_edit_screen.dart';
 
 class FormScreen extends StatefulWidget {
 
@@ -74,6 +80,40 @@ class _FormScreenState extends State<FormScreen> {
 
   late Map<String, dynamic> _userData;
 
+  final ImagePicker _imagePicker = ImagePicker();
+
+  bool _isUploading = false;
+
+  Future<void> _uploadAllImages() async {
+  try {
+    setState(() => _isUploading = true);
+    
+    for (final page in widget._computedPages.values) {
+      for (final element in page.elements.values) {
+        if (element is image_model.ImagePickerElement) {
+          final imgElement = element;
+          for (int i = 0; i < imgElement.imageFiles.length; i++) {
+            if (imgElement.downloadUrls[i] == null) {
+              final file = imgElement.imageFiles[i];
+              final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+              final storageRef = FirebaseStorage.instance.ref("images/$fileName");
+              await storageRef.putFile(file);
+              final url = await storageRef.getDownloadURL();
+              imgElement.downloadUrls[i] = url;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Image upload failed: $e")),
+    );
+    rethrow;
+  } finally {
+    setState(() => _isUploading = false);
+  }
+}
   @override
   Widget build(BuildContext context) {
 
@@ -114,7 +154,7 @@ class _FormScreenState extends State<FormScreen> {
           TextButton(
             onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-
+                  await _uploadAllImages();
                   writeChanges();
                   widget._screenshots[widget._pageNumber] = (await _screenshotController.capture())!;
                   parsePdfAndMail();
@@ -257,7 +297,105 @@ class _FormScreenState extends State<FormScreen> {
       ),
     ];
 
-    if(element.runtimeType == text_model.Text){
+  if (element.runtimeType == image_model.ImagePickerElement) {
+    final imgElement = element as image_model.ImagePickerElement;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(imgElement.title, style: TextStyle(fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        
+        ElevatedButton.icon(
+          icon: Icon(Icons.add_photo_alternate),
+          label: Text("Add Images"),
+          onPressed: () async {
+            final pickedFiles = await ImagePicker().pickMultiImage();
+            if (pickedFiles.isEmpty) return;
+
+            setState(() {
+              for (final pickedFile in pickedFiles) {
+                imgElement.addImage(File(pickedFile.path));
+              }
+            });
+          },
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: imgElement.imageFiles.asMap().entries.map((entry) {
+            final index = entry.key;
+            final file = entry.value;
+            
+            return Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Image.file(
+                    file,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  right: 4,
+                  top: 4,
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final editedFile = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DrawingPage(
+                                imageFile: file,
+                              ),
+                            ),
+                          );
+                          if (editedFile != null) {
+                            setState(() {
+                              imgElement.imageFiles[index] = editedFile;
+                              imgElement.downloadUrls[index] = null;
+                            });
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.edit, size: 16, color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => setState(() => imgElement.removeImage(index)),
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.close, size: 16, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+    else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 
@@ -507,7 +645,14 @@ class _FormScreenState extends State<FormScreen> {
             selElement.otherText = "";
           }
         }
-      }else{
+      }
+      else if (element.runtimeType == image_model.ImagePickerElement) {
+    
+      image_model.ImagePickerElement imgElement = element as image_model.ImagePickerElement;
+      imgElement.fileNames = imgElement.fileNames;
+      imgElement.downloadUrls = imgElement.downloadUrls;
+    }
+    else{
 
         loc_model.Location locElement = element as loc_model.Location;
 
