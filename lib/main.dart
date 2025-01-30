@@ -118,7 +118,7 @@ Future<void> main() async {
       ],
     ),
     title: 'WHO Form Manager',
-    home: home, //ImageUploadPage(db: db),
+    home: home,
     routes: {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),
