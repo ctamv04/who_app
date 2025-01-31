@@ -299,7 +299,6 @@ class _FormScreenState extends State<FormScreen> {
           }
           return null;
         },
-        readOnly: _specialCheckbox,
       ));
 
     }else if(element.runtimeType == Selection){

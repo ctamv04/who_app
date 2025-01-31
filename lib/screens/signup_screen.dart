@@ -48,7 +48,7 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Padding(
             padding: const EdgeInsets.all(40.0),
             child: Column(
-              spacing: 10.0,
+                spacing: 10.0,
                 children: [
                   Container(
                     height: 250,
@@ -74,7 +74,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         visible: _emptyName,
                         child: Text("- Name can't be empty",
                           style: TextStyle(
-                              color: Colors.red,
+                            color: Colors.red,
                           ),
                         ),
                       ),
@@ -107,7 +107,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         visible: _passwordTooShort,
                         child: Text("- Password must be at least 8 characters long",
                           style: TextStyle(
-                              color: Colors.red,
+                            color: Colors.red,
                           ),
                         ),
                       ),
@@ -115,7 +115,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         visible: _noUpLowCharacter,
                         child: Text("- Password must contain at least one lowercase and uppercase character",
                           style: TextStyle(
-                              color: Colors.red,
+                            color: Colors.red,
                           ),
                         ),
                       ),
@@ -123,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         visible: _noSpecialCharacter,
                         child: Text("- Password must have at least one special character.",
                           style: TextStyle(
-                              color: Colors.red,
+                            color: Colors.red,
                           ),
                         ),
                       ),
@@ -147,7 +147,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         visible: _passwordsDontMatch,
                         child: Text("- Passwords do not match",
                           style: TextStyle(
-                              color: Colors.red,
+                            color: Colors.red,
                           ),
                         ),
                       ),
@@ -186,6 +186,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             warning = "Email is already in use.";
                         }
 
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(warning),
@@ -198,13 +199,13 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/login');
+                        Navigator.pushReplacementNamed(context, '/login');
                       },
                       child: Text("Do you already have an account? Log in")
                   )
                 ]
             )
-        )
+        ),
       )
     );
   }

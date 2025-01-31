@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:who_app/screens/admin/form_screen_admin.dart';
 import 'package:who_app/screens/admin/submissions_screen_admin.dart';
 import '../form_screen.dart';
+import 'form_editing_screen.dart';
 
 class FormListScreenAdmin extends StatefulWidget {
 
@@ -39,16 +40,8 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
           ),
         );
 
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
+        Navigator.of(context).popUntil((route) => false);
+        Navigator.pushNamed(context, '/login');
       }
     });
   }
@@ -102,7 +95,15 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-
+          Navigator.push(
+            context,
+              MaterialPageRoute(
+                builder: (context) => FormEditingScreen(
+                  db: widget._db,
+                  auth: widget._auth,
+                ),
+              )
+          );
         },
         child: const Icon(Icons.add),
       ),

@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:who_app/screens/admin/form_editing_screen.dart';
 import 'package:who_app/screens/admin/form_screen_admin.dart';
-import '../form_screen.dart';
 
 class SubmissionsScreenAdmin extends StatefulWidget {
 
@@ -50,16 +49,8 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
           ),
         );
 
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
+        Navigator.of(context).popUntil((route) => false);
+        Navigator.pushNamed(context, '/login');
       }
     });
   }
@@ -97,6 +88,7 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FormScreenAdmin(
+                          formId: widget._formId,
                           form: form,
                           pageNumber: 1,
                           computedPages: {},
@@ -119,17 +111,17 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FormScreenAdmin(
+              builder: (context) => FormEditingScreen(
+                formId: widget._formId,
                 form: form,
                 pageNumber: 1,
-                computedPages: {},
                 db: widget._db,
                 auth: widget._auth,
               ),
             ),
           );
         },
-        child: const Icon(Icons.contact_page),
+        child: const Icon(Icons.edit_rounded),
       ),
     );
   }

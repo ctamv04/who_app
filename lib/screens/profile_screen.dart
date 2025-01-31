@@ -50,16 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'user') {
 
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
+        Navigator.of(context).popUntil((route) => false);
+        Navigator.pushNamed(context, '/login');
       }
     });
   }
@@ -100,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                   actions: [
                     TextButton(
-                      onPressed: () async {
+                      onPressed: () {
                         widget._auth.signOut();
                       },
                       child: const Text('Log out'),
@@ -127,12 +119,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         Expanded(
                                             child: TextFormField(
                                               controller: _nameController,
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return "Full name can't be empty";
-                                                }
-                                                return null;
-                                              },
                                             )
                                         )
                                       ]),
@@ -146,12 +132,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         Expanded(
                                             child: TextFormField(
                                               controller: _positionController,
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return "Position can't be empty";
-                                                }
-                                                return null;
-                                              },
                                             )
                                         )
                                       ]),
@@ -164,12 +144,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Expanded(
                                         child: TextFormField(
                                           controller: _institutionController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "Institution can't be empty";
-                                            }
-                                            return null;
-                                          },
                                         )
                                     )
                                   ]),
@@ -217,12 +191,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Expanded(
                                         child: TextFormField(
                                           controller: _cityController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "City can't be empty";
-                                            }
-                                            return null;
-                                          },
                                         )
                                     )
                                   ]),
@@ -235,12 +203,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Expanded(
                                         child: TextFormField(
                                           controller: _countryController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "Country can't be empty";
-                                            }
-                                            return null;
-                                          },
                                         )
                                     )
                                   ]),
@@ -253,12 +215,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Expanded(
                                         child: TextFormField(
                                           controller: _unitController,
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "Unit of measurement can't be empty";
-                                            }
-                                            return null;
-                                          },
                                         )
                                     )
                                   ])
