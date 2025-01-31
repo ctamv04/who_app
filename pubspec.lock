@@ -90,7 +90,7 @@ packages:
     source: hosted
     version: "4.4.2"
   collection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: collection
       sha256: a1ace0a119f20aabc852d165077c036cd864315bd99b7eaa10a60100341941bf
@@ -720,14 +720,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-  responsive_framework:
-    dependency: "direct main"
-    description:
-      name: responsive_framework
-      sha256: a8e1c13d4ba980c60cbf6fa1e9907cd60662bf2585184d7c96ca46c43de91552
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.1"
   sanitize_html:
     dependency: transitive
     description:

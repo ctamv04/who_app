@@ -132,8 +132,8 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
           runSpacing: 8,
           children: imgElement.downloadUrls.map((url) {
             return Container(
-              width: 100,
-              height: 100,
+              width: 150,
+              height: 150,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(8),
@@ -145,9 +145,7 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
           }).toList(),
         ),
       );
-    }
-
-    else if(element.runtimeType == text_model.Text){
+    }else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 

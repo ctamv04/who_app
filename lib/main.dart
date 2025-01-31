@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ import 'firebase_options.dart';
 import 'models/form.dart' as form_model;
 import 'models/text.dart' as text_model;
 import '../models/page.dart' as page_model;
-import 'package:responsive_framework/responsive_framework.dart';
 import '../models/selection.dart';
 import '../models/image_element.dart' as image_model;
 
@@ -93,9 +91,6 @@ Future<void> main() async {
   // final json = form.toJson();
   // db.collection("forms").add(json);
 
-
-
-  
   final auth = FirebaseAuth.instance;
   // auth.signOut();
 
@@ -111,13 +106,6 @@ Future<void> main() async {
   }
 
   runApp(MaterialApp(
-    builder: (context, child) => ResponsiveBreakpoints.builder(
-      child: child!,
-      breakpoints: [
-        const Breakpoint(start: 0, end: 800, name: MOBILE),
-        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-      ],
-    ),
     title: 'WHO Form Manager',
     home: home,
     routes: {

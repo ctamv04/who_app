@@ -1,9 +1,8 @@
 import 'dart:async';
-
+import '../../models/image_element.dart' as image_model;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:who_app/screens/admin/form_editing_screen.dart';
 import 'package:who_app/screens/map_widget.dart';
 import '../../models/form_element.dart';
 import '../../models/page.dart' as page_model;
@@ -152,7 +151,29 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
       ),
     ];
 
-    if(element.runtimeType == text_model.Text){
+    if (element.runtimeType == image_model.ImagePickerElement) {
+      final imgElement = element as image_model.ImagePickerElement;
+
+      elements.add(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: imgElement.downloadUrls.map((url) {
+            return Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: url != null
+                  ? Image.network(url, fit: BoxFit.cover)
+                  : Icon(Icons.error_outline, color: Colors.red),
+            );
+          }).toList(),
+        ),
+      );
+    }else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 

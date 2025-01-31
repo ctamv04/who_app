@@ -11,7 +11,8 @@ import '../../models/selection.dart';
 import '../../models/text.dart' as text_model;
 import '../../models/location.dart' as loc_model;
 import '../../models/form.dart' as form_model;
-
+import '../../models/image_element.dart' as image_model;
+import 'package:collection/collection.dart';
 
 class FormEditingScreen extends StatefulWidget {
 
@@ -280,6 +281,14 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                     _selectedElement = -1;
                   }),
                 ),
+                MenuItemButton(
+                  child: Text("Image field"),
+                  onPressed: () => setState(() {
+                    _newElementType = "image";
+                    _newElementIndex = _page.elements.length;
+                    _selectedElement = -1;
+                  }),
+                ),
               ],
               builder: (BuildContext context, MenuController controller, Widget? child) {
                 return IconButton(
@@ -387,7 +396,29 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       ),
     ];
 
-    if(element.runtimeType == text_model.Text){
+    if (element.runtimeType == image_model.ImagePickerElement) {
+      final imgElement = element as image_model.ImagePickerElement;
+
+      elements.add(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: imgElement.downloadUrls.map((url) {
+            return Container(
+              width: 500,
+              height: 500,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: url != null
+                  ? Image.network(url, fit: BoxFit.cover)
+                  : Icon(Icons.error_outline, color: Colors.red),
+            );
+          }).toList(),
+        ),
+      );
+    }else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 
@@ -518,7 +549,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       )
     ];
 
-    if(_newElementType == "" && (index != _page.elements.length && _selectedElement == index)){
+    if(_newElementType == "" && (index != maxBy(_page.elements.keys, (x) => x) && _selectedElement == index)){
       finalElements.add(
           Center(
             child: MenuAnchor(
@@ -551,6 +582,14 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Location field"),
                   onPressed: () => setState(() {
                     _newElementType = "location";
+                    _newElementIndex = index;
+                    _selectedElement = -1;
+                  }),
+                ),
+                MenuItemButton(
+                  child: Text("Image field"),
+                  onPressed: () => setState(() {
+                    _newElementType = "image";
                     _newElementIndex = index;
                     _selectedElement = -1;
                   }),
@@ -629,7 +668,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       )
     ];
 
-    Widget nonCheckboxOption = Center(
+    Widget requiredOption = Center(
         child: Row(
           children: [
             Checkbox(
@@ -645,9 +684,18 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         )
     );
 
-    if(type == "text"){
+    if(type == "image"){
 
-      elements.add(nonCheckboxOption);
+      elements.add(
+        ElevatedButton.icon(
+          icon: Icon(Icons.add_photo_alternate),
+          label: Text("Add Images"),
+          onPressed: () {},
+        )
+      );
+    }else if(type == "text"){
+
+      elements.add(requiredOption);
       elements.add(
           TextFormField(
             readOnly: true,
@@ -655,7 +703,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       );
     }else if(type == "location"){
 
-      elements.add(nonCheckboxOption);
+      elements.add(requiredOption);
       elements.add(
           Stack(
               children: [
@@ -701,7 +749,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       List<Widget> selections = [];
       if(type == "radio"){
 
-        elements.add(nonCheckboxOption);
+        elements.add(requiredOption);
 
         for(String option in _newElementOptions){
           selections.add(
@@ -929,7 +977,9 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                       }else{
                         setState(() {
                           _page.elements = _page.elements.map((k,v) => k >= _newElementIndex ? MapEntry(k+1, v) : MapEntry(k, v));
-                          if(_newElementType == "text"){
+                          if(_newElementType == "image"){
+                            _page.elements[_newElementIndex] = image_model.ImagePickerElement(title: _titleController.text, subTitle: _descriptionController.text);
+                          }else if(_newElementType == "text"){
                             _page.elements[_newElementIndex] = text_model.Text(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
                           }else if(_newElementType == "location"){
                             _page.elements[_newElementIndex] = loc_model.Location(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
