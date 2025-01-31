@@ -1,3 +1,4 @@
+import 'package:who_app/models/image_element.dart';
 import 'package:who_app/models/selection.dart';
 import 'package:who_app/models/text.dart';
 import 'location.dart';
@@ -21,6 +22,8 @@ abstract class FormElement {
       return Text.fromJson(json);
     }else if(type == "selection"){
       return Selection.fromJson(json);
+    }else if(type == "image_picker"){
+      return ImagePickerElement.fromJson(json);
     }else{
       return Location.fromJson(json);
     }
