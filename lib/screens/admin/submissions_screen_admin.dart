@@ -73,6 +73,22 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
       body: StreamBuilder(
         stream: widget._db.collection("filled_forms").where('form_id', isEqualTo: widget._formId).snapshots(),
         builder: (context, snapshot) {
+
+          if(snapshot.hasData && snapshot.data!.docs.isEmpty){
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                    child: Text("No forms of this type have been submitted yet.",
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    )
+                )
+              ],
+            );
+          }
+
           return ListView.builder(
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {

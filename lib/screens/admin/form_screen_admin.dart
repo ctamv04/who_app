@@ -152,27 +152,49 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
     ];
 
     if (element.runtimeType == image_model.ImagePickerElement) {
+
       final imgElement = element as image_model.ImagePickerElement;
 
-      elements.add(
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: imgElement.downloadUrls.map((url) {
-            return Container(
-              width: 150,
+      final images = imgElement.downloadUrls.map((url) {
+        return Container(
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: url != null
+              ? Image.network(url, fit: BoxFit.cover)
+              : Icon(Icons.error_outline, color: Colors.red),
+        );
+      }).toList();
+
+      if(images.isEmpty){
+        elements.add(
+            Container(
               height: 150,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: url != null
-                  ? Image.network(url, fit: BoxFit.cover)
-                  : Icon(Icons.error_outline, color: Colors.red),
-            );
-          }).toList(),
-        ),
-      );
+              child: Center(
+                child: Text("No images uploaded",
+                    style: TextStyle(
+                      color: Colors.grey,
+                    )
+                ),
+              )
+            )
+        );
+      }else{
+        elements.add(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: images,
+          ),
+        );
+      }
     }else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;

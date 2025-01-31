@@ -17,10 +17,8 @@ import '../models/location.dart' as loc_model;
 import '../models/image_element.dart' as image_model;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'image_edit_screen.dart';
 
 class FormScreen extends StatefulWidget {
@@ -184,8 +182,9 @@ class _FormScreenState extends State<FormScreen> {
                   Navigator.popUntil(context, (route) {
                     if (route.settings.name == '/forms') {
                       exists = true;
+                      return true;
                     }
-                    return true;
+                    return false;
                   });
                   if (!exists) {
                     Navigator.pushNamed(context, '/forms');
@@ -343,7 +342,9 @@ class _FormScreenState extends State<FormScreen> {
                     Positioned(
                       right: 4,
                       top: 4,
+                      width: 142,
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
                             onTap: () async {
@@ -368,10 +369,9 @@ class _FormScreenState extends State<FormScreen> {
                                 color: Colors.blue,
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.edit, size: 16, color: Colors.white),
+                              child: Icon(Icons.edit, size: 24, color: Colors.white),
                             ),
                           ),
-                          SizedBox(width: 4),
                           GestureDetector(
                             onTap: () => setState(() => imgElement.removeImage(index)),
                             child: Container(
@@ -380,7 +380,7 @@ class _FormScreenState extends State<FormScreen> {
                                 color: Colors.red,
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.close, size: 16, color: Colors.white),
+                              child: Icon(Icons.close, size: 24, color: Colors.white),
                             ),
                           ),
                         ],

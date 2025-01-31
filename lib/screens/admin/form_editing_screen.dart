@@ -397,26 +397,13 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
     ];
 
     if (element.runtimeType == image_model.ImagePickerElement) {
-      final imgElement = element as image_model.ImagePickerElement;
 
       elements.add(
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: imgElement.downloadUrls.map((url) {
-            return Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: url != null
-                  ? Image.network(url, fit: BoxFit.cover)
-                  : Icon(Icons.error_outline, color: Colors.red),
-            );
-          }).toList(),
-        ),
+          ElevatedButton.icon(
+            icon: Icon(Icons.add_photo_alternate),
+            label: Text("Add Images"),
+            onPressed: () {},
+          )
       );
     }else if(element.runtimeType == text_model.Text){
 
@@ -668,20 +655,19 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       )
     ];
 
-    Widget requiredOption = Center(
-        child: Row(
-          children: [
-            Checkbox(
-                value: _newElementRequired,
-                onChanged: (value) {
-                  setState(() {
-                    _newElementRequired = value ?? false;
-                  });
-                }
-            ),
-            Text("Required")
-          ],
-        )
+    Widget requiredOption = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Checkbox(
+            value: _newElementRequired,
+            onChanged: (value) {
+              setState(() {
+                _newElementRequired = value ?? false;
+              });
+            }
+        ),
+        Text("Required")
+      ],
     );
 
     if(type == "image"){
