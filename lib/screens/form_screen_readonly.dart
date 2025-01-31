@@ -7,6 +7,7 @@ import '../../models/page.dart' as page_model;
 import '../../models/selection.dart';
 import '../../models/text.dart' as text_model;
 import '../../models/location.dart' as loc_model;
+import '../models/image_element.dart' as image_model;
 
 class FormScreenReadOnly extends StatefulWidget {
 
@@ -105,6 +106,7 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
     );
   }
 
+  
   Widget makeWidget(int index, FormElement element){
 
     List<Widget> elements = [
@@ -121,7 +123,31 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
       ),
     ];
 
-    if(element.runtimeType == text_model.Text){
+    if (element.runtimeType == image_model.ImagePickerElement) {
+      final imgElement = element as image_model.ImagePickerElement;
+      
+      elements.add(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: imgElement.downloadUrls.map((url) {
+            return Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: url != null 
+                  ? Image.network(url, fit: BoxFit.cover)
+                  : Icon(Icons.error_outline, color: Colors.red),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 
