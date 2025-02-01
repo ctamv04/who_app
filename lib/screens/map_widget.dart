@@ -40,6 +40,8 @@ class TextFieldDetectionState extends State<MapWidget> {
 
   late Iterable<Location> _lastSuggestions = <Location>[];
 
+  bool _init = true;
+
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
   }
@@ -50,17 +52,30 @@ class TextFieldDetectionState extends State<MapWidget> {
 
   Future<LatLng> getLocation() async {
 
-    if(widget._coordinates == LatLng(0,0)){
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      widget._coordinates = LatLng(position.latitude, position.longitude);
+    LatLng coordinates = widget.coordinates;
+    if(_init){
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+            // locationSettings: LocationSettings(
+            //     timeLimit: Duration(seconds: 4)
+            // )
+        );
+
+        coordinates = LatLng(position.latitude, position.longitude);
+      } catch (e) {
+        coordinates = LatLng(45.4685, 9.1824);
+      }
     }
 
-    return widget._coordinates;
+    _init = false;
+    widget._coordinates = coordinates;
+    return coordinates;
   }
 
   @override
   Widget build(BuildContext context) {
 
+    LatLng tempTarget = LatLng(0, 0);
     return FutureBuilder(
         future: getLocation(),
         builder: (context, snapshot) {
@@ -79,7 +94,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                           onMapCreated: _onMapCreated,
                           initialCameraPosition: CameraPosition(
                             target: widget._coordinates,
-                            zoom: 20.0,
+                            zoom: 10.0,
                           ),
                           myLocationEnabled: true,
                           myLocationButtonEnabled: true,
@@ -87,10 +102,12 @@ class TextFieldDetectionState extends State<MapWidget> {
                               Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
                             },
                           onCameraMove: (CameraPosition position) {
-                            widget._coordinates = position.target;
+                            tempTarget = position.target;
                           },
                           onCameraIdle: () {
-                            setState(() {});
+                            setState(() {
+                              widget._coordinates = tempTarget;
+                            });
                           },
                         )
                     ),
@@ -118,71 +135,72 @@ class TextFieldDetectionState extends State<MapWidget> {
                             )
                         )
                     ),
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: SizedBox(
-                          width: 300,
-                          child: Container(
-                            color: Colors.white,
-                            child: Autocomplete<Location>(
-                              optionsBuilder: (TextEditingValue textEditingValue) async {
+                    if(!kIsWeb)
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: SizedBox(
+                            width: 300,
+                            child: Container(
+                              color: Colors.white,
+                              child: Autocomplete<Location>(
+                                optionsBuilder: (TextEditingValue textEditingValue) async {
 
-                                String text = textEditingValue.text;
+                                  String text = textEditingValue.text;
 
-                                if (text.isEmpty) {
-                                  return const Iterable<Location>.empty();
-                                }
+                                  if (text.isEmpty) {
+                                    return const Iterable<Location>.empty();
+                                  }
 
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0';
-                                String request = '$baseURL&input=$text&sessiontoken=$_sessionToken';
-                                var response = await http.get(Uri.parse(request));
+                                  String baseURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0';
+                                  String request = '$baseURL&input=$text&sessiontoken=$_sessionToken';
+                                  var response = await http.get(Uri.parse(request));
 
-                                if (text != textEditingValue.text) {
-                                  return _lastSuggestions;
-                                }
+                                  if (text != textEditingValue.text) {
+                                    return _lastSuggestions;
+                                  }
 
-                                if (response.statusCode == 200) {
-                                  List<dynamic> predictions = json.decode(response.body)['predictions'];
-                                  return predictions.map((x) => Location(id: x['place_id'] as String, name: x['description'] as String));
-                                } else {
-                                  return const Iterable<Location>.empty();
-                                }
-                              },
-                              fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                                  if (response.statusCode == 200) {
+                                    List<dynamic> predictions = json.decode(response.body)['predictions'];
+                                    return predictions.map((x) => Location(id: x['place_id'] as String, name: x['description'] as String));
+                                  } else {
+                                    return const Iterable<Location>.empty();
+                                  }
+                                },
+                                fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
 
-                                textEditingController.text = widget._address;
-                                return TextField(
-                                    controller: textEditingController,
-                                    focusNode: focusNode,
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter address'
-                                    )
-                                );
-                              },
-                              onSelected: (Location selection) async {
+                                  textEditingController.text = widget._address;
+                                  return TextField(
+                                      controller: textEditingController,
+                                      focusNode: focusNode,
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter address'
+                                      )
+                                  );
+                                },
+                                onSelected: (Location selection) async {
 
-                                String placeID  = selection._id;
-                                String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0&fields=formatted_address,geometry';
-                                String request = '$baseURL&place_id=$placeID&sessiontoken=$_sessionToken';
-                                var response = await http.get(Uri.parse(request));
-                                Map<String, dynamic> result = json.decode(response.body)['result'];
+                                  String placeID  = selection._id;
+                                  String baseURL = 'https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyDPDDKJTWjHxj2lEffPCPgqbo-CghXX9b0&fields=formatted_address,geometry';
+                                  String request = '$baseURL&place_id=$placeID&sessiontoken=$_sessionToken';
+                                  var response = await http.get(Uri.parse(request));
+                                  Map<String, dynamic> result = json.decode(response.body)['result'];
 
-                                widget._address = result['formatted_address'] as String;
-                                _updateMapLocation(LatLng(result['geometry']['location']['lat'] as double, result['geometry']['location']['lng'] as double));
+                                  widget._address = result['formatted_address'] as String;
+                                  _updateMapLocation(LatLng(result['geometry']['location']['lat'] as double, result['geometry']['location']['lng'] as double));
 
-                                _sessionToken = Uuid().v4();
-                              },
-                            ),
-                          )
-                      ),
-                    )
+                                  _sessionToken = Uuid().v4();
+                                },
+                              ),
+                            )
+                        ),
+                      )
                   ],
                 );
               },
               validator: (value) {
 
-                if(widget._required && widget._address == ""){
+                if(!kIsWeb && widget._required && widget._address == ""){
                   return "Please enter a valid address.";
                 }
 

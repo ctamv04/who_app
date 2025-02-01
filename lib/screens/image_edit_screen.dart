@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_painter/image_painter.dart';
 import 'dart:io';
 
 class DrawingPage extends StatefulWidget {
-  final File imageFile;
+  final Uint8List imageFile;
 
   const DrawingPage({Key? key, required this.imageFile}) : super(key: key);
 
@@ -23,16 +24,13 @@ class _DrawingPageState extends State<DrawingPage> {
   Future<void> saveDrawing() async {
     final editedImage = await _controller.exportImage();
     if (editedImage != null) {
-      final tempDir = Directory.systemTemp;
-      final tempFile = File('${tempDir.path}/drawn_image.png');
-      await tempFile.writeAsBytes(editedImage);
-
-      Navigator.pop(context, tempFile);
+      Navigator.pop(context, editedImage);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Draw on Image'),
@@ -44,11 +42,11 @@ class _DrawingPageState extends State<DrawingPage> {
         ],
       ),
       body: Center(
-        child: ImagePainter.file(
+        child: ImagePainter.memory(
           widget.imageFile,
           controller: _controller,
           scalable: false,
-        ),
+        )
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:io'; 
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:who_app/models/form_element.dart';
 import 'package:who_app/models/page.dart';
 
 class ImagePickerElement extends FormElement {
-  List<File> imageFiles;
+  List<Uint8List> imageFiles;
   List<String> fileNames;
   List<String?> downloadUrls;
 
@@ -12,13 +13,13 @@ class ImagePickerElement extends FormElement {
     required super.title,
     super.subTitle,
     super.required,
-    List<File>? imageFiles,
+    List<Uint8List>? imageFiles,
     List<String>? fileNames,
     List<String?>? downloadUrls,
   }) : imageFiles = imageFiles ?? [], fileNames = fileNames ?? [], downloadUrls = downloadUrls ?? [];
 
-  void addImage(File file) {
-    imageFiles.add(file);
+  void addImage(Uint8List image) {
+    imageFiles.add(image);
     downloadUrls.add(null);
   }
 

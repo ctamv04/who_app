@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -20,6 +21,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'image_edit_screen.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:cookie_jar/cookie_jar.dart';
 
 class FormScreen extends StatefulWidget {
 
@@ -95,7 +98,9 @@ class _FormScreenState extends State<FormScreen> {
               final file = imgElement.imageFiles[i];
               final fileName = DateTime.now().millisecondsSinceEpoch.toString();
               final storageRef = FirebaseStorage.instance.ref("images/$fileName");
-              await storageRef.putFile(file);
+              await storageRef.putData(file, SettableMetadata(
+                contentType: 'image/jpeg'
+              ));
               final url = await storageRef.getDownloadURL();
               imgElement.downloadUrls[i] = url;
             }
@@ -160,8 +165,26 @@ class _FormScreenState extends State<FormScreen> {
                   User? user = widget._auth.currentUser;
                   String userId = "";
                   if(user != null){
+
                     userId = user.uid;
+                  }else if(kIsWeb){
+
+                    final cookies = html.document.cookie?.split('; ') ?? [];
+                    for (final cookie in cookies) {
+                      final parts = cookie.split('=');
+                      if (parts[0] == 'guest_id') {
+                        userId = parts[1];
+                      }
+                    }
+
+                    final domain = html.window.location.hostname;
+                    if(userId == ''){
+                      userId = Uuid().v4();
+                      final cookie = 'guest_id=$userId; expires=${DateTime.now().add(Duration(days: 365))}; path=/; domain=$domain';
+                      html.document.cookie = cookie;
+                    }
                   }else{
+
                     final path = (await getApplicationDocumentsDirectory()).path;
                     final file = File('$path/guest_id.txt');
                     if(await file.exists()){
@@ -311,9 +334,11 @@ class _FormScreenState extends State<FormScreen> {
                 final pickedFiles = await ImagePicker().pickMultiImage();
                 if (pickedFiles.isEmpty) return;
 
+                final futureImages = pickedFiles.map((file) => file.readAsBytes());
+                final images = await Future.wait(futureImages);
                 setState(() {
-                  for (final pickedFile in pickedFiles) {
-                    imgElement.addImage(File(pickedFile.path));
+                  for (final pickedImage in images) {
+                    imgElement.addImage(pickedImage);
                   }
                 });
               },
@@ -334,10 +359,10 @@ class _FormScreenState extends State<FormScreen> {
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Image.file(
+                      child: Image.memory(
                         file,
                         fit: BoxFit.cover,
-                      ),
+                      )
                     ),
                     Positioned(
                       right: 4,
