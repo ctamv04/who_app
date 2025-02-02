@@ -1,3 +1,5 @@
+import 'dart:async';
+import '../../models/image_element.dart' as image_model;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,8 @@ import '../../models/text.dart' as text_model;
 import '../../models/location.dart' as loc_model;
 
 class FormScreenAdmin extends StatefulWidget {
+
+  final String _formId;
 
   final Map<String, dynamic> _form;
 
@@ -22,12 +26,14 @@ class FormScreenAdmin extends StatefulWidget {
 
   FormScreenAdmin({
     super.key,
+    required String formId,
     required Map<String, dynamic> form,
     int? pageNumber,
     Map<int, page_model.Page>? computedPages,
     required FirebaseFirestore db,
     required FirebaseAuth auth
   }) : _form = form,
+        _formId = formId,
         _pageNumber = pageNumber ?? 1,
         _computedPages = (computedPages != null && pageNumber != null) ? (computedPages..[pageNumber] = page_model.Page.fromJson(form['pages'][pageNumber.toString()])) : {},
         _db = db,
@@ -39,28 +45,29 @@ class FormScreenAdmin extends StatefulWidget {
 
 class _FormScreenAdminState extends State<FormScreenAdmin> {
 
+  late StreamSubscription<User?> _subscription;
+
   late page_model.Page _page;
 
   @override
   void initState() {
 
     super.initState();
-    widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
+    _subscription = widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
 
       if (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'admin') {
 
-        bool exists = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == '/login') {
-            exists = true;
-          }
-          return true;
-        });
-        if (!exists) {
-          Navigator.pushNamed(context, '/login');
-        }
+        Navigator.of(context).popUntil((route) => false);
+        Navigator.pushNamed(context, '/login');
       }
     });
+  }
+
+  @override
+  void dispose() {
+
+    _subscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -83,7 +90,7 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
         SizedBox(height: 30)
       ];
     }
-    seList += _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
     List<Widget> actions = [];
     if(widget._form['pages'][(widget._pageNumber+1).toString()] != null){
@@ -91,11 +98,12 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
           IconButton(
             icon: const Icon(Icons.arrow_forward),
             tooltip: 'Next page',
-            onPressed: () async {
+            onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => FormScreenAdmin(
+                        formId: widget._formId,
                         form: widget._form,
                         pageNumber: widget._pageNumber + 1,
                         computedPages: widget._computedPages,
@@ -124,11 +132,6 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-        },
-        child: const Icon(Icons.edit_rounded),
-      ),
     );
   }
 
@@ -148,7 +151,51 @@ class _FormScreenAdminState extends State<FormScreenAdmin> {
       ),
     ];
 
-    if(element.runtimeType == text_model.Text){
+    if (element.runtimeType == image_model.ImagePickerElement) {
+
+      final imgElement = element as image_model.ImagePickerElement;
+
+      final images = imgElement.downloadUrls.map((url) {
+        return Container(
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: url != null
+              ? Image.network(url, fit: BoxFit.cover)
+              : Icon(Icons.error_outline, color: Colors.red),
+        );
+      }).toList();
+
+      if(images.isEmpty){
+        elements.add(
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text("No images uploaded",
+                    style: TextStyle(
+                      color: Colors.grey,
+                    )
+                ),
+              )
+            )
+        );
+      }else{
+        elements.add(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: images,
+          ),
+        );
+      }
+    }else if(element.runtimeType == text_model.Text){
 
       text_model.Text txtElement = element as text_model.Text;
 

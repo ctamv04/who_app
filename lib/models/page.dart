@@ -9,10 +9,10 @@ class Page {
   Map<int, FormElement> _elements;
 
   Page({
-    required String title,
+    String? title,
     String? description,
     Map<int, FormElement>? elements
-  }) : _title = title, _description = description ?? "", _elements = elements ?? {};
+  }) : _title = title ?? "", _description = description ?? "", _elements = elements ?? {};
 
   factory Page.fromJson(Map<String, dynamic> json) {
 
@@ -33,4 +33,8 @@ class Page {
   String get title => _title;
   String get description => _description;
   Map<int, FormElement> get elements => _elements;
+
+  set title(String? title) => _title = title ?? "";
+  set description(String? description) => _description = description ?? "";
+  set elements(Map<int, FormElement>? elements) => _elements = elements ?? {};
 }
