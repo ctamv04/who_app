@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:who_app/models/location.dart';
 import 'package:who_app/models/text.dart';
 import 'package:who_app/models/selection.dart';
@@ -50,5 +49,18 @@ void main() {
   final locationElement = FormElement.fromJson(locationJson);
   expect(locationElement, isA<Location>());
   expect((locationElement as Location).address, '123 Main St');
+});
+
+test('FormElement properties are inherited correctly', () {
+  final textElement = Text(
+    title: 'Test Title',
+    subTitle: 'Test Subtitle',
+    required: true,
+    text: 'Sample text',
+  );
+
+  expect(textElement.title, 'Test Title');
+  expect(textElement.subTitle, 'Test Subtitle');
+  expect(textElement.required, isTrue);
 });
 }
