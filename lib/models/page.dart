@@ -6,7 +6,7 @@ class Page {
 
   String _title;
   String _description;
-  Map<int, FormElement>? _elements;
+  Map<int, FormElement> _elements;
 
   Page({
     required String title,

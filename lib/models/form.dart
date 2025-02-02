@@ -10,8 +10,9 @@ class Form {
 
   Form({
     required String title,
-    String? description,
-    Map<int, Page>? pages
+    String? description,    
+    Map<int, Page>? pages,
+    
   }) : _title = title, _description = description ?? "", _pages = pages ?? {};
 
   // Getter
@@ -28,7 +29,7 @@ class Form {
     return Form(
         title: json['title'] as String,
         description: json['description'] as String,
-        pages: (json['pages'] as Map<String, dynamic>).map((k,v) => MapEntry(int.parse(k), Page.fromJson(v)))
+        pages: (json['pages'] as Map<String, dynamic>).map((k,v) => MapEntry(int.parse(k), Page.fromJson(v))),
     );
   }
 
@@ -36,6 +37,6 @@ class Form {
       {
         'title': _title,
         'description': _description,
-        'pages': _pages.map((k,v) => MapEntry(k.toString(), v.toJson()))
+        'pages': _pages.map((k,v) => MapEntry(k.toString(), v.toJson())),
       };
 }
