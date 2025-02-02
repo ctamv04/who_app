@@ -22,6 +22,7 @@ Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
+    name: "who-facility-repurposing-forms",
     options: DefaultFirebaseOptions.currentPlatform,
   );
 

@@ -23,7 +23,7 @@ class Page {
   // Setter
   set title(String title) => _title = title;
   set description(String description) => _description = description;
-  set elements(Map<int, FormElement>? elements) {_elements = elements;}
+  set elements(Map<int, FormElement>? elements) {_elements = elements!;}
 
   factory Page.fromJson(Map<String, dynamic> json) {
 
