@@ -89,7 +89,7 @@ class _FormScreenState extends State<FormScreen> {
     setState(() => _isUploading = true);
     
     for (final page in widget._computedPages.values) {
-      for (final element in page.elements.values) {
+      for (final element in page.elements!.values) {
         if (element is image_model.ImagePickerElement) {
           final imgElement = element;
           for (int i = 0; i < imgElement.imageFiles.length; i++) {
@@ -229,7 +229,7 @@ class _FormScreenState extends State<FormScreen> {
           if(snapshot.data != "not signed in"){
             _userData = (snapshot.data! as DocumentSnapshot<Map<String, dynamic>>).data()!;
 
-            for(FormElement element in _page.elements.values){
+            for(FormElement element in _page.elements!.values){
 
               if(element.runtimeType == text_model.Text && (element as text_model.Text).special != ""){
 
@@ -253,7 +253,7 @@ class _FormScreenState extends State<FormScreen> {
           }
 
           seList.add(SizedBox(height: 30));
-          seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+          seList += _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
           return Scaffold(
             appBar: AppBar(
@@ -432,7 +432,7 @@ class _FormScreenState extends State<FormScreen> {
         ),
         controller: _controllers[index],
         validator: (value) {
-          if (_page.elements[index]!.required && (value == null || value.isEmpty)) {
+          if (_page.elements![index]!.required && (value == null || value.isEmpty)) {
             return 'This field is required.';
           }
           return null;

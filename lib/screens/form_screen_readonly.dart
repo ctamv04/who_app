@@ -62,7 +62,7 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
         SizedBox(height: 30)
       ];
     }
-    seList += _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    seList += _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
 
     List<Widget> actions = [];
     if(widget._form['pages'][(widget._pageNumber+1).toString()] != null){

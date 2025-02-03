@@ -51,7 +51,9 @@ dependencies:
   firebase_storage: ^12.4.1
   image_picker: ^1.1.2
   mockito: ^5.4.2
-  build_runner: ^2.4.6
+  firebase_auth_mocks: ^0.14.1
+  google_sign_in_mocks: ^0.3.0
+  fake_cloud_firestore: ^3.1.0
 
 dev_dependencies:
   flutter_test:
