@@ -9,10 +9,10 @@ class Page {
   Map<int, FormElement> _elements;
 
   Page({
-    required String title,
+    String? title,
     String? description,
     Map<int, FormElement>? elements
-  }) : _title = title, _description = description ?? "", _elements = elements ?? {};
+  }) : _title = title ?? "", _description = description ?? "", _elements = elements ?? {};
 
   
   // Getter

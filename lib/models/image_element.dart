@@ -9,12 +9,13 @@ class ImagePickerElement extends FormElement {
   List<String?> downloadUrls;
 
   ImagePickerElement({
-    required String title,
+    required super.title,
+    super.subTitle,
+    super.required,
     List<File>? imageFiles,
     List<String>? fileNames,
     List<String?>? downloadUrls,
-    String subTitle = "",
-  }) : imageFiles = imageFiles ?? [], fileNames = fileNames ?? [], downloadUrls = downloadUrls ?? [], super(title: title, subTitle: subTitle);
+  }) : imageFiles = imageFiles ?? [], fileNames = fileNames ?? [], downloadUrls = downloadUrls ?? [];
 
   void addImage(File file) {
     imageFiles.add(file);
@@ -28,9 +29,10 @@ class ImagePickerElement extends FormElement {
 
   Map<String, dynamic> toJson() {
     return {
-      'title': title,
+      'title': super.title,
+      'subtitle': super.subTitle,
+      'required': super.required,
       'type': 'image_picker',
-      'subTitle': subTitle, 
       'fileNames': fileNames,
       'downloadUrls': downloadUrls,
     };
@@ -38,8 +40,9 @@ class ImagePickerElement extends FormElement {
 
   factory ImagePickerElement.fromJson(Map<String, dynamic> json) {
     return ImagePickerElement(
-      title: json['title'] as String? ?? 'Untitled',
-      subTitle: json['subTitle'] as String? ?? "",
+      title: json['title'] as String,
+      subTitle: json['subtitle'] as String,
+      required: json['required'] as bool,
       fileNames: (json['fileNames'] as List<dynamic>?) 
           ?.map((e) => e as String)
           .toList() ?? [],

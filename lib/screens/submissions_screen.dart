@@ -66,10 +66,12 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("You haven't submitted any forms of this type yet.",
-                          style: TextStyle(
-                            color: Colors.grey,
-                          ),
+                        Center(
+                          child: Text("You haven't submitted any forms of this type yet.",
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          )
                         )
                       ],
                     );
