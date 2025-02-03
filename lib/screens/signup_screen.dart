@@ -45,7 +45,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
+        child: Container(
+            width: 500,
             padding: const EdgeInsets.all(40.0),
             child: Column(
                 spacing: 10.0,
@@ -154,6 +155,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                   ElevatedButton(
+                    style: ButtonStyle(
+                      side: WidgetStateProperty.all(
+                          BorderSide(
+                              color: Colors.white,
+                              width: 2
+                          )
+                      ),
+                    ),
                     onPressed: () async {
 
                       if(_emptyName || _noUpLowCharacter || _passwordTooShort || _noSpecialCharacter || _passwordsDontMatch){
@@ -195,7 +204,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         );
                       }
                     },
-                    child: const Text('Sign up'),
+                    child: const Text('Sign up',
+                      style: TextStyle(
+                          color: Colors.white
+                      ),
+                    ),
                   ),
                   TextButton(
                       onPressed: () {

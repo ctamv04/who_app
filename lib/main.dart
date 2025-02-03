@@ -123,6 +123,12 @@ Future<void> main() async {
   runApp(MaterialApp(
     title: 'WHO Form Manager',
     home: home,
+    theme: ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: Color.fromARGB(255, 29, 91, 153)
+      )
+    ),
     routes: {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),

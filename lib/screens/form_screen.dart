@@ -553,11 +553,25 @@ class _FormScreenState extends State<FormScreen> {
   Widget makeWidget(int index, FormElement element, int pageNum) {
 
     List<Widget> elements = [
-      Text(element.title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+      Row(
+        children: [
+          Text(element.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Opacity(
+              opacity: element.required ? 1.0 : 0.0,
+            child: Text('*',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+                fontSize: 16,
+              ),
+            )
+          )
+        ],
       ),
       Text(element.subTitle,
         style: TextStyle(
@@ -575,8 +589,21 @@ class _FormScreenState extends State<FormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ElevatedButton.icon(
-              icon: Icon(Icons.add_photo_alternate),
-              label: Text("Add Images"),
+              style: ButtonStyle(
+                side: WidgetStateProperty.all(
+                    BorderSide(
+                        color: Colors.white,
+                        width: 2
+                    )
+                ),
+              ),
+              icon: Icon(Icons.add_photo_alternate,
+                  color: Colors.white
+              ),
+              label: Text("Add Images",
+                style: TextStyle(
+                    color: Colors.white
+                ),),
               onPressed: () async {
                 final pickedFiles = await ImagePicker().pickMultiImage();
                 if (pickedFiles.isEmpty) return;
@@ -783,6 +810,16 @@ class _FormScreenState extends State<FormScreen> {
         elements.add(
             FormField<bool>(
                 builder: (state) {
+
+                  if(state.hasError){
+                    selections.add(
+                        Text(state.errorText ?? '',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        )
+                    );
+                  }
                   return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: selections
@@ -857,6 +894,17 @@ class _FormScreenState extends State<FormScreen> {
         elements.add(
             FormField<bool>(
                 builder: (state) {
+
+                  selections.add(
+                    Visibility(
+                      visible: state.hasError,
+                        child: Text(state.errorText ?? '',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        )
+                    )
+                  );
                   return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: selections

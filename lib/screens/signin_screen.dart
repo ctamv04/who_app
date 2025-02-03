@@ -31,7 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
+        child: Container(
+            width: 500,
             padding: const EdgeInsets.all(40.0),
             child: Column(
                 spacing: 10.0,
@@ -58,6 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                   ),
                   ElevatedButton(
+                    style: ButtonStyle(
+                      side: WidgetStateProperty.all(
+                          BorderSide(
+                              color: Colors.white,
+                              width: 2
+                          )
+                      ),
+                    ),
                     onPressed: () async {
 
                       try {
@@ -80,7 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushReplacementNamed(context, '/forms_admin');
                       }
                     },
-                    child: const Text('Sign in'),
+                    child: const Text('Sign in',
+                      style: TextStyle(
+                        color: Colors.white
+                      ),
+                    ),
                   ),
                   TextButton(
                       onPressed: () {
