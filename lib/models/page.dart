@@ -18,12 +18,12 @@ class Page {
   // Getter
   String get title => _title;
   String get description => _description;
-  Map<int, FormElement>? get elements => _elements;
+  Map<int, FormElement> get elements => _elements;
 
   // Setter
   set title(String title) => _title = title;
   set description(String description) => _description = description;
-  set elements(Map<int, FormElement>? elements) {_elements = elements!;}
+  set elements(Map<int, FormElement>? elements) {_elements = elements ?? {};}
 
   factory Page.fromJson(Map<String, dynamic> json) {
 
@@ -38,6 +38,6 @@ class Page {
       {
         'title': _title,
         'description': _description,
-        'elements': _elements?.map((k,v) => MapEntry(k.toString(), v.toJson())) ?? {}
+        'elements': _elements.map((k,v) => MapEntry(k.toString(), v.toJson())) ?? {}
       };
 }
