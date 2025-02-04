@@ -124,6 +124,7 @@ void main() {
           computedPages: {},
           db: mockFirestore,
           auth: mockAuth,
+          isBeingTested: true,
         ),
       ),
     );
