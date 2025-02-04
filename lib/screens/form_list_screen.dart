@@ -55,6 +55,22 @@ class _FormListScreenState extends State<FormListScreen> {
       body: StreamBuilder(
         stream: widget._db.collection("forms").snapshots(),
         builder: (context, snapshot) {
+
+          if(snapshot.hasData && snapshot.data!.docs.isEmpty){
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                    child: Text("There are no forms available.",
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    )
+                )
+              ],
+            );
+          }
+
           return ListView.builder(
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {

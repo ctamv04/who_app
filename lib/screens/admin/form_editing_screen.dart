@@ -158,6 +158,9 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                             filled: true,
                             fillColor: Colors.white,
                           ),
+                          style: TextStyle(
+                            color: Colors.black
+                          ),
                         )
                     )
                   ],
@@ -377,6 +380,19 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
               fontSize: 16,
             ),
           ),
+          Opacity(
+              opacity: element.required ? 1.0 : 0.0,
+              child: Text('*',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                  fontSize: 16,
+                ),
+              )
+          ),
+          SizedBox(
+            width: 5,
+          ),
           if(_newElementType == "")
             IconButton(
                 onPressed: () {
@@ -400,8 +416,20 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
 
       elements.add(
           ElevatedButton.icon(
+            style: ButtonStyle(
+              side: WidgetStateProperty.all(
+                  BorderSide(
+                      color: Colors.white,
+                      width: 2
+                  )
+              ),
+            ),
             icon: Icon(Icons.add_photo_alternate),
-            label: Text("Add Images"),
+            label: Text("Add Images",
+              style: TextStyle(
+                  color: Colors.white
+              ),
+            ),
             onPressed: () {},
           )
       );
@@ -674,8 +702,20 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
 
       elements.add(
         ElevatedButton.icon(
+          style: ButtonStyle(
+            side: WidgetStateProperty.all(
+                BorderSide(
+                    color: Colors.white,
+                    width: 2
+                )
+            ),
+          ),
           icon: Icon(Icons.add_photo_alternate),
-          label: Text("Add Images"),
+          label: Text("Add Images",
+            style: TextStyle(
+              color: Colors.white
+            ),
+          ),
           onPressed: () {},
         )
       );
@@ -685,6 +725,9 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       elements.add(
           TextFormField(
             readOnly: true,
+            decoration: const InputDecoration(
+              hintText: 'Please enter text.'
+            ),
           )
       );
     }else if(type == "location"){
@@ -783,10 +826,10 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   )
               )
           );
-          _newOption = false;
         }
       }else if(type == "checkbox"){
 
+        _newElementNumSelections = 2;
         elements.add(
             Center(
               child: Column(
@@ -822,17 +865,18 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                       ),
                     ],
                   ),
-                  DropdownMenu(
-                    width: 180.0,
-                    label: const Text('Selections'),
-                    dropdownMenuEntries: List.generate(_newElementOptions.length, (idx) => DropdownMenuEntry(value: 1+idx, label: (1+idx).toString())),
-                    initialSelection: _newElementOptions.isNotEmpty ? 1 : null,
-                    onSelected: (int? value) {
-                      setState(() {
-                        _newElementNumSelections = value ?? 1;
-                      });
-                    },
-                  )
+                  if(_newElementOptions.length > 1)
+                    DropdownMenu(
+                      width: 180.0,
+                      label: const Text('Required # of Selections'),
+                      dropdownMenuEntries: List.generate(_newElementOptions.length-1, (idx) => DropdownMenuEntry(value: 2+idx, label: (2+idx).toString())),
+                      initialSelection: 2,
+                      onSelected: (int? value) {
+                        setState(() {
+                          _newElementNumSelections = value ?? 2;
+                        });
+                      },
+                    )
                 ],
               ),
             )
@@ -845,6 +889,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                     readOnly: true,
                     initialValue: option,
                   ),
+                  controlAffinity: ListTileControlAffinity.leading,
                   value: false,
                   contentPadding: EdgeInsets.only(bottom: 1.0),
                   onChanged: null
@@ -871,6 +916,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                                     },
                                     controller: _optionController,
                                   ),
+                                  controlAffinity: ListTileControlAffinity.leading,
                                   value: false,
                                   contentPadding: EdgeInsets.only(bottom: 1.0),
                                   onChanged: null
@@ -882,29 +928,37 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   )
               )
           );
-          _newOption = false;
         }
       }
 
-      selections.add(
-        Center(
-          child: IconButton(
-            onPressed: () {
-              setState(() {
-                _newOption = true;
-                _optionFormKey = GlobalKey<FormState>();
-              });
-            },
-            icon: Icon(Icons.add),
+      selections =  [
+        Container(
+          width: 350,
+          child: Column(
+            children: selections,
           )
         )
-      );
+      ];
+      if(!_newOption){
+        selections.add(
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  _newOption = true;
+                  _optionFormKey = GlobalKey<FormState>();
+                });
+              },
+              icon: Icon(Icons.add),
+            )
+        );
+      }
 
       elements.add(
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        Center(
+          child: Column(
               children: selections
           )
+        )
       );
     }
 
@@ -912,9 +966,11 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         decoration: BoxDecoration(
           border: Border.all(
             width: 2.0,
+            color: Colors.white
           ),
           borderRadius: BorderRadius.circular(8.0),
         ),
+        padding: EdgeInsets.all(15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

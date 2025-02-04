@@ -111,11 +111,25 @@ class _FormScreenReadOnlyState extends State<FormScreenReadOnly> {
   Widget makeWidget(int index, FormElement element){
 
     List<Widget> elements = [
-      Text(element.title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+      Row(
+        children: [
+          Text(element.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Opacity(
+              opacity: element.required ? 1.0 : 0.0,
+              child: Text('*',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                  fontSize: 16,
+                ),
+              )
+          )
+        ],
       ),
       Text(element.subTitle,
         style: TextStyle(
