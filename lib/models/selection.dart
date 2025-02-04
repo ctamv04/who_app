@@ -23,9 +23,9 @@ class Selection extends FormElement {
   factory Selection.fromJson(Map<String, dynamic> json) {
 
     return Selection(
-      title: json['title'] as String,
-      subTitle: json['subtitle'] as String,
-      required: json['required'] as bool,
+      title: json['title'] as String? ?? "",
+      subTitle: json['subtitle'] as String? ?? "",
+      required: json['required'] as bool? ?? false,
       numSelections: json['num_selections'] as int? ?? 1,
       other: json['other'] as bool? ?? false,
       selections: (json['selections'] as Map<String, dynamic>).map((k,v) => MapEntry(k, v as bool)),

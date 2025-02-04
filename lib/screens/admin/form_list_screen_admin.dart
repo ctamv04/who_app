@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:who_app/screens/admin/form_screen_admin.dart';
 import 'package:who_app/screens/admin/submissions_screen_admin.dart';
-import '../form_screen.dart';
 import 'form_editing_screen.dart';
 
 class FormListScreenAdmin extends StatefulWidget {
@@ -120,6 +118,7 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
                   },
                 );
               }
+              return null;
             }
           );
         }
