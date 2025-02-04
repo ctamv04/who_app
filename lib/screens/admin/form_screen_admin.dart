@@ -45,9 +45,9 @@ class FormScreenAdmin extends StatefulWidget {
 
 class _FormScreenAdminState extends State<FormScreenAdmin> {
 
-  late StreamSubscription<User?> _subscription;
-
   late page_model.Page _page;
+
+  late StreamSubscription<User?> _subscription;
 
   @override
   void initState() {

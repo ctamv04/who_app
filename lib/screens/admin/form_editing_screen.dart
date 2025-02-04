@@ -110,6 +110,13 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
   late OverlayEntry _overlay;
 
   @override
+  void dispose() {
+
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
   void initState() {
 
     super.initState();
@@ -219,13 +226,6 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
     _page = page_model.Page.fromJson(widget._form['pages'][widget._pageNumber.toString()]);
     _pageTitleController.text = _page.title;
     _pageDescriptionController.text = _page.description;
-  }
-
-  @override
-  void dispose() {
-
-    _subscription.cancel();
-    super.dispose();
   }
 
   @override

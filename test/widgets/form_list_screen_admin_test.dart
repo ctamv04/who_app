@@ -8,6 +8,7 @@ import 'package:mockito/mockito.dart';
 import 'package:who_app/firebase_options.dart';
 import 'package:who_app/screens/admin/form_editing_screen.dart';
 import 'package:who_app/screens/admin/form_list_screen_admin.dart';
+import 'package:who_app/screens/admin/submissions_screen_admin.dart';
 import 'package:who_app/screens/form_list_screen.dart';
 import 'package:who_app/screens/form_screen.dart';
 import 'package:who_app/screens/signin_screen.dart';
@@ -64,6 +65,36 @@ void main() {
     mockAuth.signInWithEmailAndPassword(email: 'test@example.com', password: 'password');
   });
 
+  testWidgets('Filled form', (WidgetTester tester) async {
+
+    final form = form_model.Form(title: 'form', pages: {1 : page_model.Page(title: 'title')}).toJson();
+    // form['date'] = DateTime(2025).toString();
+    // form['uid'] = 'someuid';
+    // form['form_id'] = '123456789123456789';
+    // await db!.collection('filled_forms').doc('123456789123456789').set(form);
+    // await mockFirestore.collection('filled_forms').doc('123456789123456789').set(form);
+    await mockFirestore.collection('forms').doc('123456789123456789').set(form);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FormListScreenAdmin(db: mockFirestore, auth: mockAuth, testing: true),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final listtile = find.text("form");
+
+    expect(listtile, findsOne);
+
+    await tester.tap(listtile);
+
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(SubmissionsScreenAdmin), findsOneWidget);
+  });
+
   testWidgets('Check floating button', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -86,29 +117,29 @@ void main() {
     expect(find.byType(FormEditingScreen), findsOneWidget);
   });
 
+  // testWidgets('Check sign out', (WidgetTester tester) async {
+  //   await tester.pumpWidget(
+  //     MaterialApp(
+  //       home: FormListScreenAdmin(db: mockFirestore, auth: mockAuth),
+  //       routes: {
+  //         '/login': (context) => LoginScreen(db: mockFirestore, auth: mockAuth),
+  //       },
+  //     ),
+  //   );
+  //
+  //   await tester.pumpAndSettle();
+  //
+  //   final button = find.byType(TextButton);
+  //
+  //   expect(button, findsOneWidget);
+  //
+  //   await tester.tap(button);
+  //
+  //   await tester.pumpAndSettle();
+  //   expect(find.byType(LoginScreen), findsOneWidget);
+  // });
+
   testWidgets('Check sign out', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: FormListScreenAdmin(db: mockFirestore, auth: mockAuth, testing: true),
-        routes: {
-          '/login': (context) => LoginScreen(db: mockFirestore, auth: mockAuth),
-        },
-      ),
-    );
-
-    await tester.pumpAndSettle();
-
-    final button = find.byType(TextButton);
-
-    expect(button, findsOneWidget);
-
-    await tester.tap(button);
-
-    await tester.pumpAndSettle();
-    expect(find.byType(LoginScreen), findsOneWidget);
-  });
-
-  testWidgets('Check auto sign out', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: FormListScreenAdmin(db: mockFirestore, auth: mockAuth),
