@@ -12,6 +12,7 @@ void main() {
     'subtitle': 'Test Subtitle',
     'required': true,
     'text': 'Sample text',
+    'special': 'Special text'
   };
 
   final selectionJson = {
@@ -138,7 +139,7 @@ test('FormElement properties are inherited correctly in Selection', () {
     expect(json['required'], false);
     expect(json['num_selections'], 3);
     expect(json['other'], true);
-    expect(json['selections'], {'Option 1': true, 'Option 2': false});
+    expect(json['selections'], {'Option 1': true, 'Option 2': false, 'other': false});
     expect(json['other_text'], 'Other option text');
   });
 
@@ -201,8 +202,7 @@ test('FormElement properties are inherited correctly in Selection', () {
       'required': true,
     };
 
-    final formElement = FormElement.fromJson(invalidJson);
-    expect(formElement, isA<Location>());
+    expect(() => FormElement.fromJson(invalidJson), throwsFormatException);
   });
 
   test('Selection handles default values correctly when optional fields are missing', () {
