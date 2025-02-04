@@ -16,6 +16,9 @@ import 'models/text.dart' as text_model;
 import '../models/page.dart' as page_model;
 import '../models/selection.dart';
 import '../models/image_element.dart' as image_model;
+import 'package:flutter/foundation.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:cookie_jar/cookie_jar.dart';
 
 Future<void> main() async {
 
@@ -25,8 +28,6 @@ Future<void> main() async {
   );
 
   final db = FirebaseFirestore.instance;
-
-
 
 //   var form = form_model.Form(
 //   title: "Form with Multiple Images",
@@ -96,7 +97,21 @@ Future<void> main() async {
 
   Widget home = LoginScreen(db: db, auth: auth);
   final user = auth.currentUser;
-  if(user != null || await File('${(await getApplicationDocumentsDirectory()).path}/guest_id.txt').exists()){
+  if(user == null && kIsWeb){
+
+    final cookies = html.document.cookie?.split('; ') ?? [];
+    String userId = '';
+    for (final cookie in cookies) {
+      final parts = cookie.split('=');
+      if (parts[0] == 'guest_id') {
+        userId = parts[1];
+      }
+    }
+
+    if(userId != ''){
+      home = FormListScreen(db: db, auth: auth);
+    }
+  }else if(user != null || await File('${(await getApplicationDocumentsDirectory()).path}/guest_id.txt').exists()){
 
     home = FormListScreen(db: db, auth: auth);
 
@@ -108,6 +123,12 @@ Future<void> main() async {
   runApp(MaterialApp(
     title: 'WHO Form Manager',
     home: home,
+    theme: ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: Color.fromARGB(255, 29, 91, 153)
+      )
+    ),
     routes: {
       '/forms': (context) => FormListScreen(db: db, auth: auth),
       '/forms_admin': (context) => FormListScreenAdmin(db: db, auth: auth),

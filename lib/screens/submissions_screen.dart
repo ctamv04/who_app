@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:who_app/screens/form_screen_readonly.dart';
 import 'form_screen.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:cookie_jar/cookie_jar.dart';
 
 class SubmissionsScreen extends StatefulWidget {
 
@@ -136,15 +139,33 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
 
   Future<String> getGuestId() async {
 
-    final path = (await getApplicationDocumentsDirectory()).path;
-    final file = File('$path/guest_id.txt');
-
     String userId = "";
-    if(await file.exists()){
-      userId = await file.readAsString();
-    }else {
-      userId = Uuid().v4();
-      await file.writeAsString(userId);
+    if(kIsWeb){
+
+      final cookies = html.document.cookie?.split('; ') ?? [];
+      for (final cookie in cookies) {
+        final parts = cookie.split('=');
+        if (parts[0] == 'guest_id') {
+          userId = parts[1];
+        }
+      }
+
+      final domain = html.window.location.hostname;
+      if(userId == ''){
+        userId = Uuid().v4();
+        final cookie = 'guest_id=$userId; expires=${DateTime.now().add(Duration(days: 365))}; path=/; domain=$domain';
+        html.document.cookie = cookie;
+      }
+    }else{
+      final path = (await getApplicationDocumentsDirectory()).path;
+      final file = File('$path/guest_id.txt');
+
+      if(await file.exists()){
+        userId = await file.readAsString();
+      }else {
+        userId = Uuid().v4();
+        await file.writeAsString(userId);
+      }
     }
 
     return userId;

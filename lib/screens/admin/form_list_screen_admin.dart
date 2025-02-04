@@ -65,6 +65,22 @@ class _FormListScreenAdminState extends State<FormListScreenAdmin> {
       body: StreamBuilder(
         stream: widget._db.collection("forms").snapshots(),
         builder: (context, snapshot) {
+
+          if(snapshot.hasData && snapshot.data!.docs.isEmpty){
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                    child: Text("No forms have been created yet.",
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    )
+                )
+              ],
+            );
+          }
+
           return ListView.builder(
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {

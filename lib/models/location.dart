@@ -15,7 +15,7 @@ class Location extends FormElement {
     String? address,
     LatLng? coordinates
   }) : _address = address ?? "",
-        _coordinates = coordinates ?? LatLng(0, 0);
+        _coordinates = coordinates ?? LatLng(45.4685, 9.1824);
 
   factory Location.fromJson(Map<String, dynamic> json) {
 
