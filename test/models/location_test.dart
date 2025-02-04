@@ -72,12 +72,10 @@ void main() {
         address: testAddress,
         coordinates: testCoordinates,
       );
-
-      // Testen der Getter
+      
       expect(locationElement.address, testAddress);
       expect(locationElement.coordinates, testCoordinates);
 
-      // Testen der Setter
       locationElement.address = 'New Test Address';
       locationElement.coordinates = LatLng(47.0, 8.0);
 
