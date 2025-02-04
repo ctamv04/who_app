@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:universal_html/html.dart';
-import 'package:who_app/screens/admin/form_list_screen_admin.dart';
-import 'package:who_app/screens/form_list_screen.dart';
 import 'package:who_app/screens/form_screen.dart';
 import 'package:who_app/models/form.dart' as form_model;
 import 'package:who_app/models/page.dart' as page_model;
 import 'package:who_app/models/text.dart' as text_model;
-import 'package:who_app/screens/signin_screen.dart';
+import 'package:who_app/models/selection.dart' as selection_model;
+import 'package:who_app/models/location.dart' as location_model;
+import 'package:who_app/models/image_element.dart' as image_model;
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:who_app/screens/signup_screen.dart';
-import 'package:who_app/screens/submissions_screen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mockito/mockito.dart';
-import 'dart:typed_data';
 
 
 class MockFirebaseStorage extends Mock implements FirebaseStorage {}
@@ -23,25 +18,35 @@ class MockFirebaseStorage extends Mock implements FirebaseStorage {}
 void main() {
   late MockFirebaseAuth mockAuth;
   late FakeFirebaseFirestore mockFirestore;
-  late FirebaseStorage mockStorage;
 
   setUp(() async {
     mockFirestore = FakeFirebaseFirestore();
     mockAuth = MockFirebaseAuth();
-    mockStorage = MockFirebaseStorage();
   });
 
   testWidgets('FormScreen renders with form data', (WidgetTester tester) async {
-    
     final page = page_model.Page(
       title: "Page 1", 
       description: "descriptionPage", 
       elements: {
-        1: text_model.Text(
-          title: "Text 1", 
-          subTitle: "Subtitle 1", 
+        0: text_model.Text(
+          title: "Text Title", 
+          subTitle: "Text Subtitle", 
           required: false, 
           text: ""
+        ),
+        1: selection_model.Selection(
+          title: "Selection Title",
+          subTitle: "Selection Subtitle",
+          selections: {"Option 1": false, "Option 2": true, "other": false},
+        ),
+        2: location_model.Location(
+          title: "Location Title",
+          subTitle: "Location Subtitle",
+        ),
+        3: image_model.ImagePickerElement(
+          title: "ImagePicker Title",
+          subTitle: "ImagePicker Subtitle",
         )
       }
     );
@@ -74,12 +79,24 @@ void main() {
     ),
   );
 
-  await tester.pumpAndSettle();
+  await tester.pump();
 
-  expect(find.text('Text 1'), findsOneWidget);
-  expect(find.text('Subtitle 1'), findsOneWidget);
+  expect(find.text('Page 1'), findsOneWidget);
+  expect(find.text('descriptionPage'), findsOneWidget);
+
+  expect(find.text('Text Title'), findsOneWidget);
+  expect(find.text('Text Subtitle'), findsOneWidget);
+
+  expect(find.text('Selection Title'), findsOneWidget);
+  expect(find.text('Selection Subtitle'), findsOneWidget);
+
+  expect(find.text('Location Title'), findsOneWidget);
+  expect(find.text('Location Subtitle'), findsOneWidget);
+
+  expect(find.text('ImagePicker Title'), findsOneWidget);
+  expect(find.text('ImagePicker Subtitle'), findsOneWidget);
   });
-  
+
   testWidgets('Next button navigates to next page', (WidgetTester tester) async {
     final page = page_model.Page(
       title: "Page 1", 
@@ -142,6 +159,4 @@ void main() {
     expect(find.text('Page 2'), findsOneWidget);
     expect(find.text('descriptionPage2'), findsOneWidget);
   });
-
-
 }
