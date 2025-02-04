@@ -41,6 +41,8 @@ class FormScreen extends StatefulWidget {
 
   final FirebaseAuth _auth;
 
+  final bool isBeingTested;
+
   FormScreen({
     super.key,
     required String formId,
@@ -50,6 +52,7 @@ class FormScreen extends StatefulWidget {
     Map<int, Uint8List>? screenshots,
     required FirebaseFirestore db,
     required FirebaseAuth auth,
+    this.isBeingTested = false,
   }) :  _formId = formId,
         _form = form,
         _pageNumber = pageNumber,
@@ -181,7 +184,9 @@ class _FormScreenState extends State<FormScreen> {
               if (_formKey.currentState!.validate()) {
 
                 writeChanges({widget._pageNumber: page});
-                widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                if(!widget.isBeingTested){
+                  widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                }
 
                 Navigator.push(
                   context,
