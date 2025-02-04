@@ -86,4 +86,19 @@ void main() {
 
     expect(find.text('Sign in'), findsOneWidget);
   });
+
+  testWidgets('No forms check', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FormListScreen(db: FakeFirebaseFirestore(), auth: mockAuth),
+        routes: {
+          '/profile': (context) => Scaffold(),
+        },
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text("There are no forms available."), findsOne);
+  });
 }
