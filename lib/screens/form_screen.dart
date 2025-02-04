@@ -86,6 +86,8 @@ class _FormScreenState extends State<FormScreen> {
 
   bool _isUploading = false;
 
+  final Map<int, String> _selectionErrors = {};
+
   Future<void> _uploadAllImages() async {
   try {
     setState(() => _isUploading = true);
@@ -827,10 +829,13 @@ class _FormScreenState extends State<FormScreen> {
                 },
                 validator: (value) {
                   if (selElement.required && _radioSelections[pageNum]![index] == null) {
-                    return 'Required field';
+                    _selectionErrors[index] = 'Required field';
+                    return _selectionErrors[index];
                   } else if(selElement.other && _radioSelections[pageNum]![index] == "other" && _controllers[pageNum]![index]!.text.isEmpty) {
-                    return 'Please enter text for the Other field';
+                    _selectionErrors[index] = 'Please enter text for the Other field';
+                    return _selectionErrors[index];
                   }else{
+                    _selectionErrors[index] = '';
                     return null;
                   }
                 }
@@ -852,6 +857,7 @@ class _FormScreenState extends State<FormScreen> {
                   title: Text(key),
                   value: _checkboxSelections[pageNum]![index]![key],
                   contentPadding: EdgeInsets.only(bottom: 1.0),
+                  controlAffinity: ListTileControlAffinity.leading,
                   onChanged: (bool? value) {
                     setState(() {
                       _checkboxSelections[pageNum]![index]![key] = value!;
@@ -882,6 +888,7 @@ class _FormScreenState extends State<FormScreen> {
                 ),
                 value: _checkboxSelections[pageNum]![index]!["other"],
                 contentPadding: EdgeInsets.only(bottom: 1.0),
+                controlAffinity: ListTileControlAffinity.leading,
                 onChanged: (bool? value) {
                   setState(() {
                     _checkboxSelections[pageNum]![index]!["other"] = value!;
@@ -895,19 +902,21 @@ class _FormScreenState extends State<FormScreen> {
             FormField<bool>(
                 builder: (state) {
 
-                  selections.add(
-                    Visibility(
-                      visible: state.hasError,
-                        child: Text(state.errorText ?? '',
+                  return Column(
+                    children: [
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: selections
+                      ),
+                      Visibility(
+                        visible: (_selectionErrors[index] ?? '') != '',
+                        child: Text(_selectionErrors[index] ?? '',
                           style: TextStyle(
                             color: Colors.red,
                           ),
-                        )
-                    )
-                  );
-                  return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: selections
+                        ),
+                      ),
+                    ],
                   );
                 },
                 validator: (value) {
@@ -917,12 +926,16 @@ class _FormScreenState extends State<FormScreen> {
 
                   if (numSelected != mustSelect) {
                     if(numSelected == 0 && !selElement.required){
+                      _selectionErrors[index] = '';
                       return null;
                     }
-                    return 'Required field. Please select $mustSelect options.';
+                    _selectionErrors[index] = 'Required field. Please select $mustSelect options.';
+                    return _selectionErrors[index];
                   } else if(selElement.other && _checkboxSelections[pageNum]![index]!["other"]! && _controllers[pageNum]![index]!.text.isEmpty){
-                    return 'Please enter text for the Other field';
+                    _selectionErrors[index] = 'Please enter text for the Other field';
+                    return _selectionErrors[index];
                   }else{
+                    _selectionErrors[index] = '';
                     return null;
                   }
                 }

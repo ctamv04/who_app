@@ -46,6 +46,7 @@ class _DrawingPageState extends State<DrawingPage> {
           widget.imageFile,
           controller: _controller,
           scalable: false,
+          controlsBackgroundColor: Colors.black,
         )
       ),
     );

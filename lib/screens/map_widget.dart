@@ -372,7 +372,7 @@ class TextFieldDetectionState extends State<MapWidget> {
                         top: 10,
                         left: 10,
                         child: SizedBox(
-                            width: 300,
+                            width: 250,
                             child: Container(
                               padding: const EdgeInsets.all(1.0),
                               color: Color.fromARGB(200, 255, 255, 255),

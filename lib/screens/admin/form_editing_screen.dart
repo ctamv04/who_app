@@ -158,6 +158,9 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                             filled: true,
                             fillColor: Colors.white,
                           ),
+                          style: TextStyle(
+                            color: Colors.black
+                          ),
                         )
                     )
                   ],
@@ -376,6 +379,19 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
+          ),
+          Opacity(
+              opacity: element.required ? 1.0 : 0.0,
+              child: Text('*',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                  fontSize: 16,
+                ),
+              )
+          ),
+          SizedBox(
+            width: 5,
           ),
           if(_newElementType == "")
             IconButton(
@@ -813,6 +829,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         }
       }else if(type == "checkbox"){
 
+        _newElementNumSelections = 2;
         elements.add(
             Center(
               child: Column(
@@ -848,17 +865,18 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                       ),
                     ],
                   ),
-                  DropdownMenu(
-                    width: 180.0,
-                    label: const Text('Selections'),
-                    dropdownMenuEntries: List.generate(_newElementOptions.length, (idx) => DropdownMenuEntry(value: 1+idx, label: (1+idx).toString())),
-                    initialSelection: _newElementOptions.isNotEmpty ? 1 : null,
-                    onSelected: (int? value) {
-                      setState(() {
-                        _newElementNumSelections = value ?? 1;
-                      });
-                    },
-                  )
+                  if(_newElementOptions.length > 1)
+                    DropdownMenu(
+                      width: 180.0,
+                      label: const Text('Required # of Selections'),
+                      dropdownMenuEntries: List.generate(_newElementOptions.length-1, (idx) => DropdownMenuEntry(value: 2+idx, label: (2+idx).toString())),
+                      initialSelection: 2,
+                      onSelected: (int? value) {
+                        setState(() {
+                          _newElementNumSelections = value ?? 2;
+                        });
+                      },
+                    )
                 ],
               ),
             )
@@ -913,10 +931,14 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
         }
       }
 
-      selections = selections.map((x) => Container(
-        width: 350,
-        child: x,
-      ) as Widget).toList();
+      selections =  [
+        Container(
+          width: 350,
+          child: Column(
+            children: selections,
+          )
+        )
+      ];
       if(!_newOption){
         selections.add(
             IconButton(
@@ -934,7 +956,6 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       elements.add(
         Center(
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: selections
           )
         )
