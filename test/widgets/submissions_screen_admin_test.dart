@@ -135,4 +135,33 @@ void main() {
 
     expect(find.byType(LoginScreen), findsOneWidget);
   });
+
+  testWidgets('SubmissionsScreenAdmin redirects to login if user is not an admin', (WidgetTester tester) async {
+
+    final mockUser2 = MockUser(
+      isAnonymous: false,
+      uid: 'user123',
+      email: 'user@example.com',
+      displayName: 'Regular User',
+    );
+    final mockAuth2 = MockFirebaseAuth(mockUser: mockUser);
+
+    await tester.pumpWidget(MaterialApp(
+      home: SubmissionsScreenAdmin(
+        formId: 'formId',
+        formTitle: 'Test Form',
+        db: mockFirestore,
+        auth: mockAuth,
+      ),
+      routes: {
+        '/login': (context) => LoginScreen(db: mockFirestore, auth: mockAuth2),
+      },
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Not authorized to access this page. Please sign in.'), findsOneWidget);
+    expect(find.byType(LoginScreen), findsOneWidget);
+  });
 }
