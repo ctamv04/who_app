@@ -41,8 +41,7 @@ void main() {
       expect(locationElement.subTitle, testSubTitle);
       expect(locationElement.required, testRequired);
       expect(locationElement.address, testAddress);
-      expect(locationElement.coordinates.latitude, 12.34);
-      expect(locationElement.coordinates.longitude, 56.78);
+      expect(locationElement.coordinates, testCoordinates);
     });
 
     test('Location.toJson() returns correct JSON', () {
@@ -63,5 +62,26 @@ void main() {
       expect(json['address'], testAddress);
       expect(json['coordinates']['lat'], testCoordinates.latitude);
       expect(json['coordinates']['long'], testCoordinates.longitude);
+    });
+
+    test('Location getter and setter work correctly', () {
+      final locationElement = Location(
+        title: testTitle,
+        subTitle: testSubTitle,
+        required: testRequired,
+        address: testAddress,
+        coordinates: testCoordinates,
+      );
+
+      // Testen der Getter
+      expect(locationElement.address, testAddress);
+      expect(locationElement.coordinates, testCoordinates);
+
+      // Testen der Setter
+      locationElement.address = 'New Test Address';
+      locationElement.coordinates = LatLng(47.0, 8.0);
+
+      expect(locationElement.address, 'New Test Address');
+      expect(locationElement.coordinates, LatLng(47.0, 8.0));
     });
 }

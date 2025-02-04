@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:who_app/models/form_element.dart';
-import 'package:who_app/models/page.dart';
 
 class ImagePickerElement extends FormElement {
   List<Uint8List> imageFiles;
