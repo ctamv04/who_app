@@ -5,6 +5,7 @@ import 'package:who_app/screens/admin/form_list_screen_admin.dart';
 import 'package:who_app/screens/signin_screen.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:who_app/main.dart' as app;
 
 void main() {
   late MockFirebaseAuth mockAuth;
@@ -13,6 +14,7 @@ void main() {
 
   setUp(() async {
     mockFirestore = FakeFirebaseFirestore();
+    mockAuth = MockFirebaseAuth();
 
     await mockFirestore.collection('users').doc('user123').set({'role': 'user'});
     await mockFirestore.collection('users').doc('admin123').set({'role': 'admin'});
@@ -20,8 +22,15 @@ void main() {
     mockUser = MockUser(uid: 'user123', email: 'test@example.com', displayName: 'TestUser');
   });
 
+  testWidgets('Main app launches', (WidgetTester tester) async {
+    app.startApp(mockFirestore, mockAuth);
+    await tester.pumpAndSettle(); 
+
+    //expect(find.byType(LoginScreen), findsOneWidget);
+  });
+
+
   testWidgets('Not logged-in users see LoginScreen', (WidgetTester tester) async {
-    mockAuth = MockFirebaseAuth();
 
     await tester.pumpWidget(MaterialApp(home: LoginScreen(db: mockFirestore, auth: mockAuth)));
 
