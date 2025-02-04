@@ -28,6 +28,7 @@ void main() {
         'required': testRequired,
         'type': "text",
         'text': testText,
+        'special': "Special Text"
       };
 
       final textElement = Text.fromJson(json);
@@ -36,6 +37,7 @@ void main() {
       expect(textElement.subTitle, testSubTitle);
       expect(textElement.required, testRequired);
       expect(textElement.text, testText);
+      expect(textElement.special, "Special Text");
     });
 
     test('Text.toJson() returns correct JSON', () {

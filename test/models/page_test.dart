@@ -22,6 +22,7 @@ void main(){
       'required': false,
       'type': 'text',
       'text': 'Test Text',
+      'special': 'Special Text'
     }, },  
   };
 
@@ -65,7 +66,7 @@ void main(){
     expect(testPage.elements, isNotEmpty);
     expect(testPage.elements, contains(testElementKey));
 
-    final element = testPage.elements?[testElementKey];
+    final element = testPage.elements[testElementKey];
     expect(element, isNotNull);
     expect(element?.title, testFormElement.title);
     expect(element?.subTitle, testFormElement.subTitle);

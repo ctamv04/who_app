@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'form_element.dart';
 
 class Page {
@@ -26,11 +24,12 @@ class Page {
   set elements(Map<int, FormElement>? elements) {_elements = elements ?? {};}
 
   factory Page.fromJson(Map<String, dynamic> json) {
-
     return Page(
-      title: json['title'] as String,
-      description: json['description'] as String,
-      elements: (json['elements'] as Map<String, dynamic>).map((k,v) => MapEntry(int.parse(k), FormElement.fromJson(v)))
+      title: json['title'] as String? ?? "",
+      description: json['description'] as String? ?? "",
+      elements: (json['elements'] as Map<String, dynamic>?)
+            ?.map((k, v) => MapEntry(int.parse(k), FormElement.fromJson(v))) ??
+        {},
     );
   }
 
@@ -38,6 +37,6 @@ class Page {
       {
         'title': _title,
         'description': _description,
-        'elements': _elements.map((k,v) => MapEntry(k.toString(), v.toJson())) ?? {}
+        'elements': _elements.map((k,v) => MapEntry(k.toString(), v.toJson()))
       };
 }

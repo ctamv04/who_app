@@ -17,15 +17,18 @@ abstract class FormElement {
 
   factory FormElement.fromJson(Map<String, dynamic> json) {
 
-    var type = json['type'] as String;
+    var type = json['type'] as String?;
+
     if(type == "text"){
       return Text.fromJson(json);
     }else if(type == "selection"){
       return Selection.fromJson(json);
     }else if(type == "image_picker"){
       return ImagePickerElement.fromJson(json);
-    }else{
+    }else if(type == "location"){
       return Location.fromJson(json);
+    } else {
+      throw FormatException('Invalid form element type: $type');
     }
   }
 

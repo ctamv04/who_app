@@ -16,6 +16,7 @@ class Text extends FormElement {
         _special = special ?? "";
 
   factory Text.fromJson(Map<String, dynamic> json) {
+  
 
     return Text(
       title: json['title'] as String,
