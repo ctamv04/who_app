@@ -24,10 +24,15 @@ Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
+    name: "who-facility-repurposing-forms",
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
   final db = FirebaseFirestore.instance;
+  final auth = FirebaseAuth.instance;
+  // auth.signOut();
+
+  startApp(db, auth);
 
 //   var form = form_model.Form(
 //   title: "Form with Multiple Images",
@@ -91,10 +96,9 @@ Future<void> main() async {
   // });
   // final json = form.toJson();
   // db.collection("forms").add(json);
+}
 
-  final auth = FirebaseAuth.instance;
-  // auth.signOut();
-
+void startApp(FirebaseFirestore db, FirebaseAuth auth) async{
   Widget home = LoginScreen(db: db, auth: auth);
   final user = auth.currentUser;
   if(user == null && kIsWeb){

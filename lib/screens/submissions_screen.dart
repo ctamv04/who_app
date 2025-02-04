@@ -17,11 +17,13 @@ class SubmissionsScreen extends StatefulWidget {
     required String formId,
     required String formTitle,
     required FirebaseFirestore db,
-    required FirebaseAuth auth
+    required FirebaseAuth auth,
+    bool? testing
   }) : _formId = formId,
         _formTitle = formTitle,
        _db = db,
-       _auth = auth;
+       _auth = auth,
+       _testing = testing ?? false;
 
   final String _formId;
 
@@ -30,6 +32,8 @@ class SubmissionsScreen extends StatefulWidget {
   final FirebaseFirestore _db;
 
   final FirebaseAuth _auth;
+
+  final bool _testing;
 
   @override
   State<SubmissionsScreen> createState() => _SubmissionsScreenState();
@@ -65,7 +69,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
                 stream: stream,
                 builder: (context, snapshot2) {
 
-                  if(snapshot2.hasData && snapshot2.data!.docs.isEmpty){
+                  if(!snapshot2.hasData || snapshot2.data!.docs.isEmpty){
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -138,6 +142,10 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
   }
 
   Future<String> getGuestId() async {
+
+    if(widget._testing) {
+      return Uuid().v4();
+    }
 
     String userId = "";
     if(kIsWeb){

@@ -56,7 +56,7 @@ class _FormListScreenState extends State<FormListScreen> {
         stream: widget._db.collection("forms").snapshots(),
         builder: (context, snapshot) {
 
-          if(snapshot.hasData && snapshot.data!.docs.isEmpty){
+          if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

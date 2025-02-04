@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:who_app/models/form_element.dart';
-import 'package:who_app/models/page.dart';
 
 class ImagePickerElement extends FormElement {
   List<Uint8List> imageFiles;
@@ -41,9 +38,9 @@ class ImagePickerElement extends FormElement {
 
   factory ImagePickerElement.fromJson(Map<String, dynamic> json) {
     return ImagePickerElement(
-      title: json['title'] as String,
-      subTitle: json['subtitle'] as String,
-      required: json['required'] as bool,
+      title: json['title'] as String? ?? "",
+      subTitle: json['subtitle'] as String? ?? "",
+      required: json['required'] as bool? ?? false,
       fileNames: (json['fileNames'] as List<dynamic>?) 
           ?.map((e) => e as String)
           .toList() ?? [],

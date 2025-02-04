@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'form_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -84,10 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
 
+                        Navigator.of(context).popUntil((route) => false);
                         if((await widget._db.collection('users').doc(widget._auth.currentUser!.uid).get()).data()!['role'] == 'user'){
-                          Navigator.pushReplacementNamed(context, '/forms');
+                          Navigator.pushNamed(context, '/forms');
                         }else{
-                          Navigator.pushReplacementNamed(context, '/forms_admin');
+                          Navigator.pushNamed(context, '/forms_admin');
                         }
                       },
                       child: const Text('Sign in',
@@ -107,7 +106,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/forms');
+                              Navigator.of(context).popUntil((route) => false);
+                              Navigator.pushNamed(context, '/forms');
                             },
                             child: Text("Continue as guest")
                         )

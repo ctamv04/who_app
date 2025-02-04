@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'form_element.dart';
 
 class Page {
@@ -14,12 +12,24 @@ class Page {
     Map<int, FormElement>? elements
   }) : _title = title ?? "", _description = description ?? "", _elements = elements ?? {};
 
-  factory Page.fromJson(Map<String, dynamic> json) {
+  
+  // Getter
+  String get title => _title;
+  String get description => _description;
+  Map<int, FormElement> get elements => _elements;
 
+  // Setter
+  set title(String title) => _title = title;
+  set description(String description) => _description = description;
+  set elements(Map<int, FormElement>? elements) {_elements = elements ?? {};}
+
+  factory Page.fromJson(Map<String, dynamic> json) {
     return Page(
-      title: json['title'] as String,
-      description: json['description'] as String,
-      elements: (json['elements'] as Map<String, dynamic>).map((k,v) => MapEntry(int.parse(k), FormElement.fromJson(v)))
+      title: json['title'] as String? ?? "",
+      description: json['description'] as String? ?? "",
+      elements: (json['elements'] as Map<String, dynamic>?)
+            ?.map((k, v) => MapEntry(int.parse(k), FormElement.fromJson(v))) ??
+        {},
     );
   }
 
@@ -29,12 +39,4 @@ class Page {
         'description': _description,
         'elements': _elements.map((k,v) => MapEntry(k.toString(), v.toJson()))
       };
-
-  String get title => _title;
-  String get description => _description;
-  Map<int, FormElement> get elements => _elements;
-
-  set title(String? title) => _title = title ?? "";
-  set description(String? description) => _description = description ?? "";
-  set elements(Map<int, FormElement>? elements) => _elements = elements ?? {};
 }

@@ -16,13 +16,12 @@ class Text extends FormElement {
         _special = special ?? "";
 
   factory Text.fromJson(Map<String, dynamic> json) {
-
     return Text(
-      title: json['title'] as String,
-      subTitle: json['subtitle'] as String,
+      title: json['title'] as String? ?? "",
+      subTitle: json['subtitle'] as String? ?? "",
       required: json['required'] as bool,
-      text: json['text'] as String,
-      special: json['special'] as String
+      text: json['text'] as String? ?? "",
+      special: json['special'] as String? ?? ""
     );
   }
 

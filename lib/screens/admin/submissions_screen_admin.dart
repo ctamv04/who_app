@@ -12,11 +12,13 @@ class SubmissionsScreenAdmin extends StatefulWidget {
     required String formId,
     required String formTitle,
     required FirebaseFirestore db,
-    required FirebaseAuth auth
+    required FirebaseAuth auth,
+    bool? testing
   }) : _formId = formId,
         _formTitle = formTitle,
        _db = db,
-       _auth = auth;
+       _auth = auth,
+       _testing = testing ?? false;
 
   final String _formId;
 
@@ -25,6 +27,8 @@ class SubmissionsScreenAdmin extends StatefulWidget {
   final FirebaseFirestore _db;
 
   final FirebaseAuth _auth;
+
+  final bool _testing;
 
   @override
   State<SubmissionsScreenAdmin> createState() => _SubmissionsScreenAdminState();
@@ -40,7 +44,7 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
     super.initState();
     _subscription = widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
 
-      if (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'admin') {
+      if (!widget._testing && (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'admin')) {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -74,7 +78,7 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
         stream: widget._db.collection("filled_forms").where('form_id', isEqualTo: widget._formId).snapshots(),
         builder: (context, snapshot) {
 
-          if(snapshot.hasData && snapshot.data!.docs.isEmpty){
+          if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -97,6 +101,7 @@ class _SubmissionsScreenAdminState extends State<SubmissionsScreenAdmin> {
               if(doc != null){
 
                 final form = doc.data();
+                final tit = '${doc.id.substring(15)}: ${form['uid']}, ${form['date']}';
                 return ListTile(
                   title: Text('${doc.id.substring(15)}: ${form['uid']}, ${form['date']}'),
                   onTap: () {

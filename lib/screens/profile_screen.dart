@@ -9,12 +9,15 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
     required FirebaseFirestore db,
-    required FirebaseAuth auth
-  }) : _db = db, _auth = auth;
+    required FirebaseAuth auth,
+    bool? testing
+  }) : _db = db, _auth = auth, _testing = testing ?? false;
 
   final FirebaseFirestore _db;
 
   final FirebaseAuth _auth;
+
+  final bool _testing;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -48,7 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _subscription = widget._auth.authStateChanges().asBroadcastStream().listen((User? user) async {
 
-      if (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'user') {
+      if (!widget._testing && (user == null || (await widget._db.collection('users').doc(user.uid).get()).data()!['role'] != 'user')) {
 
         Navigator.of(context).popUntil((route) => false);
         Navigator.pushNamed(context, '/login');

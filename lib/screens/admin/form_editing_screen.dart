@@ -110,6 +110,13 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
   late OverlayEntry _overlay;
 
   @override
+  void dispose() {
+
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
   void initState() {
 
     super.initState();
@@ -222,13 +229,6 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
   }
 
   @override
-  void dispose() {
-
-    _subscription.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
 
     List<Widget> seList = [];
@@ -246,7 +246,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       SizedBox(height: 30)
     ];
 
-    List<Widget> elements = _page.elements.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
+    List<Widget> elements = _page.elements!.map((k,v) => MapEntry(k, makeWidget(k, v))).values.toList();
     if(_newElementType == ""){
       elements.add(
           Center(
@@ -256,7 +256,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Text field"),
                   onPressed: () => setState(() {
                     _newElementType = "text";
-                    _newElementIndex = _page.elements.length;
+                    _newElementIndex = _page.elements!.length;
                     _selectedElement = -1;
                   }),
                 ),
@@ -264,7 +264,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Radio buttons"),
                   onPressed: () => setState(() {
                     _newElementType = "radio";
-                    _newElementIndex = _page.elements.length;
+                    _newElementIndex = _page.elements!.length;
                     _selectedElement = -1;
                   }),
                 ),
@@ -272,7 +272,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Checkboxes"),
                   onPressed: () => setState(() {
                     _newElementType = "checkbox";
-                    _newElementIndex = _page.elements.length;
+                    _newElementIndex = _page.elements!.length;
                     _selectedElement = -1;
                   }),
                 ),
@@ -280,7 +280,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Location field"),
                   onPressed: () => setState(() {
                     _newElementType = "location";
-                    _newElementIndex = _page.elements.length;
+                    _newElementIndex = _page.elements!.length;
                     _selectedElement = -1;
                   }),
                 ),
@@ -288,7 +288,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                   child: Text("Image field"),
                   onPressed: () => setState(() {
                     _newElementType = "image";
-                    _newElementIndex = _page.elements.length;
+                    _newElementIndex = _page.elements!.length;
                     _selectedElement = -1;
                   }),
                 ),
@@ -397,8 +397,8 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
             IconButton(
                 onPressed: () {
                   setState(() {
-                    _page.elements.remove(index);
-                    _page.elements = _page.elements.map((k,v) => k >= index ? MapEntry(k-1, v) : MapEntry(k, v));
+                    _page.elements!.remove(index);
+                    _page.elements = _page.elements!.map((k,v) => k >= index ? MapEntry(k-1, v) : MapEntry(k, v));
                   });
                 },
                 icon: Icon(Icons.delete)
@@ -564,7 +564,7 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
       )
     ];
 
-    if(_newElementType == "" && (index != maxBy(_page.elements.keys, (x) => x) && _selectedElement == index)){
+    if(_newElementType == "" && (index != maxBy(_page.elements!.keys, (x) => x) && _selectedElement == index)){
       finalElements.add(
           Center(
             child: MenuAnchor(
@@ -1018,17 +1018,17 @@ class _FormEditingScreenState extends State<FormEditingScreen> {
                         });
                       }else{
                         setState(() {
-                          _page.elements = _page.elements.map((k,v) => k >= _newElementIndex ? MapEntry(k+1, v) : MapEntry(k, v));
+                          _page.elements = _page.elements!.map((k,v) => k >= _newElementIndex ? MapEntry(k+1, v) : MapEntry(k, v));
                           if(_newElementType == "image"){
-                            _page.elements[_newElementIndex] = image_model.ImagePickerElement(title: _titleController.text, subTitle: _descriptionController.text);
+                            _page.elements![_newElementIndex] = image_model.ImagePickerElement(title: _titleController.text, subTitle: _descriptionController.text);
                           }else if(_newElementType == "text"){
-                            _page.elements[_newElementIndex] = text_model.Text(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
+                            _page.elements![_newElementIndex] = text_model.Text(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
                           }else if(_newElementType == "location"){
-                            _page.elements[_newElementIndex] = loc_model.Location(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
+                            _page.elements![_newElementIndex] = loc_model.Location(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired);
                           }else{
-                            _page.elements[_newElementIndex] = Selection(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired, selections: {for (var option in _newElementOptions) option: false}, numSelections: _newElementNumSelections, other: _newElementOther);
+                            _page.elements![_newElementIndex] = Selection(title: _titleController.text, subTitle: _descriptionController.text, required: _newElementRequired, selections: {for (var option in _newElementOptions) option: false}, numSelections: _newElementNumSelections, other: _newElementOther);
                           }
-                          _page.elements = SplayTreeMap<int, FormElement>.from(_page.elements);
+                          _page.elements = SplayTreeMap<int, FormElement>.from(_page.elements as Map<dynamic, dynamic>);
 
                           cleanup();
                         });

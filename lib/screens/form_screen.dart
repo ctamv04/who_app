@@ -41,6 +41,8 @@ class FormScreen extends StatefulWidget {
 
   final FirebaseAuth _auth;
 
+  final bool isBeingTested;
+
   FormScreen({
     super.key,
     required String formId,
@@ -50,6 +52,7 @@ class FormScreen extends StatefulWidget {
     Map<int, Uint8List>? screenshots,
     required FirebaseFirestore db,
     required FirebaseAuth auth,
+    this.isBeingTested = false,
   }) :  _formId = formId,
         _form = form,
         _pageNumber = pageNumber,
@@ -149,12 +152,8 @@ class _FormScreenState extends State<FormScreen> {
                 writeChanges({widget._pageNumber: page});
                 // widget._form['pages'] = widget._computedPages.map((k,v) => MapEntry(k.toString(), v.toJson()));
 
-                Navigator.popUntil(context, (route) {
-                  if (route.settings.name == '/forms') {
-                    return true;
-                  }
-                  return false;
-                });
+                Navigator.of(context).popUntil((route) => false);
+                Navigator.pushNamed(context, '/forms');
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -181,7 +180,13 @@ class _FormScreenState extends State<FormScreen> {
               if (_formKey.currentState!.validate()) {
 
                 writeChanges({widget._pageNumber: page});
-                widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                try{
+                  if(!widget.isBeingTested){
+                    widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                  }
+                }catch(e){
+                  //
+                }
 
                 Navigator.push(
                   context,
@@ -209,7 +214,13 @@ class _FormScreenState extends State<FormScreen> {
               if (_formKey.currentState!.validate()) {
                 await _uploadAllImages();
                 writeChanges({widget._pageNumber: page});
-                widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                try{
+                  if(!widget.isBeingTested){
+                    widget._screenshots[widget._pageNumber] = (await _screenshotController[widget._pageNumber]!.capture())!;
+                  }
+                }catch(e){
+                  //
+                }
                 parsePdfAndMail();
 
                 User? user = widget._auth.currentUser;
@@ -251,12 +262,8 @@ class _FormScreenState extends State<FormScreen> {
                 widget._form['date'] = DateTime.now().toString();
                 widget._db.collection("filled_forms").add(widget._form);
 
-                Navigator.popUntil(context, (route) {
-                  if (route.settings.name == '/forms') {
-                    return true;
-                  }
-                  return false;
-                });
+                Navigator.of(context).popUntil((route) => false);
+                Navigator.pushNamed(context, '/forms');
               }
             },
             icon: Icon(Icons.check),
@@ -431,12 +438,8 @@ class _FormScreenState extends State<FormScreen> {
             widget._form['date'] = DateTime.now().toString();
             widget._db.collection("filled_forms").add(widget._form);
 
-            Navigator.popUntil(context, (route) {
-              if (route.settings.name == '/forms') {
-                return true;
-              }
-              return false;
-            });
+            Navigator.of(context).popUntil((route) => false);
+            Navigator.pushNamed(context, '/forms');
           }
         },
         icon: Icon(Icons.check),
@@ -813,15 +816,6 @@ class _FormScreenState extends State<FormScreen> {
             FormField<bool>(
                 builder: (state) {
 
-                  if(state.hasError){
-                    selections.add(
-                        Text(state.errorText ?? '',
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
-                        )
-                    );
-                  }
                   return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: selections

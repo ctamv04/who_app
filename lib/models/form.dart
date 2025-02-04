@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:who_app/models/page.dart';
 
 class Form {
@@ -14,6 +12,15 @@ class Form {
     Map<int, Page>? pages,
     
   }) : _title = title, _description = description ?? "", _pages = pages ?? {};
+
+  // Getter
+  String get title => _title;
+  String get description => _description;
+  Map<int, Page> get pages => _pages;
+
+  // Setter
+  set title(String title) => _title = title;
+  set description(String description) => _description = description;
 
   factory Form.fromJson(Map<String, dynamic> json) {
 
